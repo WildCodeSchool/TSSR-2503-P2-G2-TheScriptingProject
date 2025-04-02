@@ -151,13 +151,13 @@ echo ""
 echo "Voulez-vous cibler un serveur ou bien un client?"
 echo "1) Un serveur"
 echo "2) Un client"
-echo "R) Retour au menu précédent"
+echo "r) Retour au menu précédent"
 echo "x) Quitter"
 read -p "Votre réponse : " cible
 case $cible in 
 	1) action_serveur ;;
 	2) action_client ;;
-	R) start ;;
+	r) start ;;
 	x) exit 0
 esac
 return 0
@@ -167,7 +167,7 @@ return 0
 
 
 #Choix 2 = SERVEUR
-# texte informatif disant qu'on entre dans le menu actions
+# texte informatif disant qu'on entre dans le menu ACTION SERVEUR
 function action_serveur()
 {
 echo ""
@@ -176,13 +176,47 @@ echo ""
 echo "Que voulez-vous faire ? "
 echo "1) Gestion d'utilisateur"
 echo "2) Gestion de groupe"
-echo "R) Retour au menu précédent"
+echo "r) Retour au menu précédent"
 echo "x) Quitter"
 read -p "Votre réponse : " choix
 case $choix in 
 	1) gestion_user ;;
 	2) gestion_groupe ;;
-	R) action ;;
+	r) action ;;
+	x) exit 0
+esac
+return 0
+}
+
+################################################
+
+
+#Choix 2 = CLIENT
+# texte informatif disant qu'on entre dans le menu ACTION CLIENT
+#Pour la tâche principale, le client est UBUNTU
+function action_client()
+{
+echo ""
+echo "Vous avez choisi pour cible le client, à savoir, CLILIN01"
+echo ""
+echo "Que voulez-vous faire ? "
+echo "1) Arrêter/redemarrer/verrouiller"
+echo "2) Gestion de répertoire"
+echo "3) Gestion du parefeu"
+echo "4) Gestion de logiciel"
+echo "5) Prise en main à distance"
+echo "6) Mettre à jour le système"
+echo "r) Retour au menu précédent"
+echo "x) Quitter"
+read -p "Votre réponse : " choix
+case $choix in 
+	1) arv ;;
+	2) gestion_répertoire ;;
+	3) parefeu ;;
+	4) logiciel ;;
+	5) distance ;;
+	6) maj ;;
+	r) action ;;
 	x) exit 0
 esac
 return 0
@@ -360,6 +394,67 @@ done
 
 
 ##################################
+
+
+#Choix 1 = INFOS
+# texte informatif disant qu'on entre dans le menu informations
+function infos()
+{
+echo ""
+echo "Vous avez choisi d'avoir une information"
+echo ""
+echo "Voulez-vous cibler un serveur ou bien un client?"
+echo "1) Un serveur"
+echo "2) Un client"
+echo "r) Retour au menu précédent"
+echo "x) Quitter"
+read -p "Votre réponse : " cible
+case $cible in 
+	1) infos_serveur ;;
+	2) infos_client ;;
+	r) start ;;
+	x) exit 0
+esac
+return 0
+}
+
+
+################################################
+
+
+#Choix 2 = SERVEUR
+# texte informatif disant qu'on entre dans le menu INFOS SERVEUR
+function infos_serveur()
+{
+echo ""
+echo "Vous avez choisi pour cible le serveur"
+echo ""
+echo "Sur quel thème cherchez-vous une information ? "
+echo "1) Droits et permissions"
+echo "2) Dates de modifications"
+# Soit à mettre maintenant, soit à mettre dans une catégorie, à voir
+echo "3) Liste des sessions ouverte par l'utilisateur"
+echo "r) Retour au menu précédent"
+echo "x) Quitter"
+read -p "Votre réponse : " choix
+case $choix in 
+	1) droits ;;
+	2) dates ;;
+	3) sessions ;;
+	r) infos
+	echo ""
+	echo "Retour au menu d'action sur le serveur :" 
+	echo "";;
+	x) echo "Sortie du menu"
+	 exit 0
+esac
+}
+
+
+#####################################
+
+
+
 
 #Lancement du 1er menu : start
 start
