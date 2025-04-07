@@ -158,7 +158,10 @@ case $cible in
 	1) action_serveur ;;
 	2) action_client ;;
 	r) start ;;
-	x) exit 0
+	x) echo "Sortie du menu"
+ 	exit 0 ;;
+	
+	*) echo "Réponse mal comprise, réessayez en tapant le chiffre correspondant" ;;
 esac
 return 0
 }
@@ -183,7 +186,10 @@ case $choix in
 	1) gestion_user ;;
 	2) gestion_groupe ;;
 	r) action ;;
-	x) exit 0
+	x) echo "Sortie du menu"
+ 	exit 0 ;;
+	
+	*) echo "Réponse mal comprise, réessayez en tapant le chiffre correspondant" ;;
 esac
 return 0
 }
@@ -217,7 +223,10 @@ case $choix in
 	5) distance ;;
 	6) maj ;;
 	r) action ;;
-	x) exit 0
+	x) echo "Sortie du menu"
+ 	exit 0 ;;
+	
+	*) echo "Réponse mal comprise, réessayez en tapant le chiffre correspondant" ;;
 esac
 return 0
 }
@@ -344,7 +353,9 @@ case $choix in
 	echo "Retour au menu d'action sur le serveur :" 
 	echo "";;
 	x) echo "Sortie du menu"
-	 exit 0
+ 	exit 0 ;;
+	
+	*) echo "Réponse mal comprise, réessayez en tapant le chiffre correspondant" ;;
 esac
 done
 }
@@ -386,7 +397,9 @@ case $choix in
 	echo "Retour au menu d'action sur le serveur :" 
 	echo "";;
 	x) echo "Sortie du menu"
-	 exit 0
+ 	exit 0 ;;
+	
+	*) echo "Réponse mal comprise, réessayez en tapant le chiffre correspondant" ;;
 esac
 done
 }
@@ -413,7 +426,10 @@ case $cible in
 	1) infos_serveur ;;
 	2) infos_client ;;
 	r) start ;;
-	x) exit 0
+	x) echo "Sortie du menu"
+ 	exit 0 ;;
+	
+	*) echo "Réponse mal comprise, réessayez en tapant le chiffre correspondant" ;;
 esac
 return 0
 }
@@ -446,12 +462,135 @@ case $choix in
 	echo "Retour au menu d'action sur le serveur :" 
 	echo "";;
 	x) echo "Sortie du menu"
+	
+	*) echo "Réponse mal comprise, réessayez en tapant le chiffre correspondant" ;;
 	 exit 0
 esac
 }
 
 
 #####################################
+
+#!/bin/bash
+
+
+#SECURITY
+function security()
+{
+while true; do
+echo ""
+echo "Que voulez vous faire ? "
+echo "1) Activer un pare-feu"
+echo "2) Désactiver un pare-feu"
+echo "3) Voir l'état du pare-feu"
+echo "4) Voir les règles établies"
+echo "5) Voir les ports ouverts"
+echo "6) Voir la dernière connexion d'un utilisateur"
+echo "7) Voir la date de dernier changement de mot de passe"
+echo "8) Voir le nombre d'interfaces"
+echo "r) Retour"
+echo "x) Quitter"
+read -p "Votre réponse : " choix
+case $choix in
+	#activation parefeu
+	1) echo ""
+	sudo ufw enable ;;
+	
+	#désactivation parefeu
+	2) echo ""
+	sudo ufw disable ;;
+	
+	#voir l'état pare-feu
+	3) echo ""
+	sudo ufw status ;;
+	
+	#lister les règles de pare-feu (Pas sur de la commande, a voir avec Dom)
+	4) echo ""
+	sudo ufw status numbered ;;
+	
+	#Voir les ports ouverts
+	5) echo ""
+	sudo netstat -tlnpu ;;
+	
+	#Dernière connexion utilisateur
+	6) echo ""
+	read -p "Pour quel utilisateur ? " user
+	last -F $user | head -n 1 ;;
+	
+	#Deriere modif  mdp
+	7) echo ""
+	read -p "Pour quel utilisateur ? " user
+	sudo chage -l user | head -n 1 ;;
+	
+	#Liste sessions ouverte
+	8) echo ""
+	read -p "Pour quel utilisateur ? " user
+	w $user ;;
+	
+	r) start ;;
+	
+	x) echo "Sortie du menu"
+ 	exit 0 ;;
+	
+	*) echo "Réponse mal comprise, réessayez en tapant le chiffre correspondant" ;;
+esac
+done
+}
+
+
+
+#######################################
+
+
+#!/bin/bash
+
+
+# RESEAUX
+function reseaux()
+{
+while true; do
+echo ""
+echo "Que voulez vous faire ? "
+echo "1) Voir l'adresse MAC"
+echo "2) Voir les adresses IP des interfaces"
+echo "3) Voir le nombre d'interfaces"
+echo "r) Retour"
+echo "x) Quitter"
+read -p "Votre réponse : " choix
+case $choix in
+	#Voir l'adresse MAC IL MANQUE SSH
+	1) echo ""
+	ip a | grep "link/ether*" | awk -F " " '{print $2}' ;;
+	
+	#Voir adresse IP des interfaces (pas besoin de SSH)
+	2) echo ""
+	cat /etc/hosts | grep "127*" ;;
+	
+	#Voir le nombre d'interfaces (donc le nombre de lignes)
+	3) echo ""
+	cat /etc/hosts | grep "127*" | wc -l ;;
+	
+	#retour au menu précédent
+	r) start ;;
+	
+	x) echo "Sortie du menu"
+ 	exit 0 ;;
+	
+	*) echo "Réponse mal comprise, réessayez en tapant le chiffre correspondant" ;;
+esac
+done
+
+}
+reseaux
+exit 0
+
+
+#####################################
+
+
+
+
+
 
 
 
