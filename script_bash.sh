@@ -151,13 +151,13 @@ echo ""
 echo "Voulez-vous cibler un serveur ou bien un client?"
 echo "1) Un serveur"
 echo "2) Un client"
-echo "R) Retour au menu précédent"
+echo "r) Retour au menu précédent"
 echo "x) Quitter"
 read -p "Votre réponse : " cible
 case $cible in 
 	1) action_serveur ;;
 	2) action_client ;;
-	R) start ;;
+	r) start ;;
 	x) exit 0
 esac
 return 0
@@ -167,7 +167,7 @@ return 0
 
 
 #Choix 2 = SERVEUR
-# texte informatif disant qu'on entre dans le menu actions
+# texte informatif disant qu'on entre dans le menu ACTION SERVEUR
 function action_serveur()
 {
 echo ""
@@ -176,13 +176,47 @@ echo ""
 echo "Que voulez-vous faire ? "
 echo "1) Gestion d'utilisateur"
 echo "2) Gestion de groupe"
-echo "R) Retour au menu précédent"
+echo "r) Retour au menu précédent"
 echo "x) Quitter"
 read -p "Votre réponse : " choix
 case $choix in 
 	1) gestion_user ;;
 	2) gestion_groupe ;;
-	R) action ;;
+	r) action ;;
+	x) exit 0
+esac
+return 0
+}
+
+################################################
+
+
+#Choix 2 = CLIENT
+# texte informatif disant qu'on entre dans le menu ACTION CLIENT
+#Pour la tâche principale, le client est UBUNTU
+function action_client()
+{
+echo ""
+echo "Vous avez choisi pour cible le client, à savoir, CLILIN01"
+echo ""
+echo "Que voulez-vous faire ? "
+echo "1) Arrêter/redemarrer/verrouiller"
+echo "2) Gestion de répertoire"
+echo "3) Gestion du parefeu"
+echo "4) Gestion de logiciel"
+echo "5) Prise en main à distance"
+echo "6) Mettre à jour le système"
+echo "r) Retour au menu précédent"
+echo "x) Quitter"
+read -p "Votre réponse : " choix
+case $choix in 
+	1) arv ;;
+	2) gestion_répertoire ;;
+	3) parefeu ;;
+	4) logiciel ;;
+	5) distance ;;
+	6) maj ;;
+	r) action ;;
 	x) exit 0
 esac
 return 0
@@ -212,7 +246,7 @@ if cat /etc/passwd | grep "$newUser" > /dev/null
 	 		echo "Erreur, utilisateur non créée"
 	 		return 1
 	 	fi
-	 fi
+fi
 return 0
 }
 
@@ -243,7 +277,7 @@ echo ""
 read -p "Quel utilisateur voulez-vous supprimer ? " utilisateur
 sudo userdel $utilisateur
 if cat /etc/passwd | grep "$utilisateur"
-	then echo "Erreur"
+	then echo "Erreur lors de la suppression"
 	else echo "Ok, utilisateur supprimé"
 fi
 return 0
@@ -318,6 +352,84 @@ done
 #####################################
 
 
+#ajout user dans groupe local
+function ajout_groupe_local()
+{
+echo ""
+echo "Vous avez choisi d'ajouter un utilisateur à un groupe"
+echo ""
+read -p "Entrez le nom de l'utilisateur à ajouter à un groupe : " user
+read -p "Entrez le nom du groupe auquel l'ajouter : " groupe
+sudo usermod -aG $groupe $user
+#vérification
+if cat /etc/group | grep "$groupe.*$user" > /dev/null 
+	 then
+	 	echo "L'utilisateur $user a été ajouté au groupe $groupe"
+	 	return 0
+	 else 
+  		echo "Erreur, l'utilisateur $user n'a pas été ajouté au groupe $groupe"
+    		return 1
+fi
+return 0
+}
+
+
+####################################################################
+
+
+
+#enlever user d'un groupe local
+function sortie_groupe_local()
+{
+echo ""
+echo "Vous avez choisi d'enlever un utilisateur d'un groupe"
+echo ""
+read -p "Entrez le nom de l'utilisateur à enlever d'un groupe : " user
+read -p "Entrez le nom du groupe auquel l'enlever : " groupe
+sudo deluser $user $groupe
+#vérification
+if cat /etc/group | grep "$groupe.*$user" > /dev/null 
+	 then
+	 	echo "Erreur, l'utilisateur $user n'a pas été supprimé du groupe $groupe"
+    		return 1
+	 	
+	 else 
+  		echo "L'utilisateur $user a été supprimé du groupe $groupe"
+	 	return 0
+fi
+return 0
+}
+
+
+
+####################################################################
+
+
+
+#ajout user dans groupe admin
+function ajout_groupe_admin()
+{
+echo ""
+echo "Vous avez choisi d'ajouter un utilisateur à un groupe admin"
+echo ""
+read -p "Entrez le nom de l'utilisateur à ajouter à un groupe : " user
+sudo usermod -aG sudo $user
+#vérification
+if cat /etc/group | grep "sudo.*$user" > /dev/null 
+	 then
+	 	echo "L'utilisateur $user a été ajouté au groupe admin"
+	 	return 0
+	 else 
+  		echo "Erreur, l'utilisateur $user n'a pas été ajouté au groupe admin"
+    		return 1
+fi
+return 0
+}
+
+
+####################################################################
+
+
 function gestion_groupe()
 {
 echo ""
@@ -360,6 +472,67 @@ done
 
 
 ##################################
+
+
+#Choix 1 = INFOS
+# texte informatif disant qu'on entre dans le menu informations
+function infos()
+{
+echo ""
+echo "Vous avez choisi d'avoir une information"
+echo ""
+echo "Voulez-vous cibler un serveur ou bien un client?"
+echo "1) Un serveur"
+echo "2) Un client"
+echo "r) Retour au menu précédent"
+echo "x) Quitter"
+read -p "Votre réponse : " cible
+case $cible in 
+	1) infos_serveur ;;
+	2) infos_client ;;
+	r) start ;;
+	x) exit 0
+esac
+return 0
+}
+
+
+################################################
+
+
+#Choix 2 = SERVEUR
+# texte informatif disant qu'on entre dans le menu INFOS SERVEUR
+function infos_serveur()
+{
+echo ""
+echo "Vous avez choisi pour cible le serveur"
+echo ""
+echo "Sur quel thème cherchez-vous une information ? "
+echo "1) Droits et permissions"
+echo "2) Dates de modifications"
+# Soit à mettre maintenant, soit à mettre dans une catégorie, à voir
+echo "3) Liste des sessions ouverte par l'utilisateur"
+echo "r) Retour au menu précédent"
+echo "x) Quitter"
+read -p "Votre réponse : " choix
+case $choix in 
+	1) droits ;;
+	2) dates ;;
+	3) sessions ;;
+	r) infos
+	echo ""
+	echo "Retour au menu d'action sur le serveur :" 
+	echo "";;
+	x) echo "Sortie du menu"
+	 exit 0
+esac
+}
+
+
+#####################################
+
+
+
 
 #Lancement du 1er menu : start
 start
