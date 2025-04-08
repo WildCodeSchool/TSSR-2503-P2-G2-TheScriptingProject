@@ -1,5 +1,48 @@
 #!/bin/bash
 
+#Fonction script à distance
+execution_script()
+{
+# Sur quelle machine distante ?
+echo ""
+echo "Sur quelle machine voulez-vous exécuter un script?" 
+echo "1) CLILIN01"
+echo "2) CLIWIN01"
+echo "3) SRVWIN01"
+#Pour SRVLX01; on aura une erreur car c'est la machine actuelle
+echo "4) SRVLX01"
+read -p "Votre réponse : " machine
+# Sur quelle machine distante ?
+echo ""
+echo "Sur quel utilisateur voulez-vous exécuter un script?"
+read -p "Votre réponse : " user
+echo ""
+echo "Quel est le nom du script que vous voulez exécuter?"
+read -p "Votre réponse : " script
+case $machine in 
+ 		1) IP=$172.16.20.30
+ 		ssh $user@$IP $script ;;
+ 		
+ 		2) IP=$172.16.20.20
+ 		ssh $user@$IP $script ;;
+ 		
+ 		3) IP=$172.16.20.5
+ 		ssh $user@$IP $script ;;
+ 		
+ 		4) echo "Vous êtes déjà sur cette machine, voulez vous exécuter le scipt?"
+ 		echo "o/n"
+ 		read -p "Votre réponse : " reponse
+ 		case reponse in
+ 			o) ./$script ;;
+ 			n) echo "Retour au menu précédent"
+ 			repertoire_logiciel ;;
+ 		esac
+esac
+
+}
+
+
+
 
 
 repertoire_logiciel()
@@ -17,25 +60,34 @@ echo "r) Retour"
 echo "x) Quitter"
 read -p "Votre réponse : " choix
 case $choix in
-	#Création du dossier
+	#Création du repertoire
 	1) echo ""
 	read -p "Quel nom voulez-vous donner au répertoire (écrire le path absolu) " repertoire
-	mkdir repertoire 
-	#Verification dossier créée
-	if [ -d dossier ]
-		then echo "Répertoire $repertoire bien créée"
-		else echo "Erreur, répertoire $repertoire non créée"
+	#Vérification repertoire n'existe pas déjà 
+	if [ -d $repertoire ]
+		then echo "Répertoire $repertoire déjà existant"
+		else mkdir $repertoire 
+		#Verification repertoire créée
+		if [ -d $repertoire ]
+			then echo "Répertoire $repertoire bien créée"
+			else echo "Erreur, répertoire $repertoire non créée"
+		fi
 	fi
 	;;
 	
 	#Suppression dossier
 	2) echo ""
-	read -p "Quel répertoire voulez-vous supprimer ? " repertoire	
-	rm -r $repertoire 
+	read -p "Quel répertoire voulez-vous supprimer (écrire le path absolu) ? " repertoire	
+	#Vérification répertoire pas déja existant
+	if [ -d $repertoire ]
+		then rm -r $repertoire 
 	#Vérification suppression dossier
-		if [ -d dossier ]
-		then echo "Erreur, répertoire $repertoire non supprimé"
-		else echo "Répertoire $repertoire bien supprimé"
+		if [ -d $repertoire ]
+			then echo "Erreur, répertoire $repertoire non supprimé"
+			else echo "Répertoire $repertoire bien supprimé"
+		fi
+		else echo "Erreur, répertoire $repertoire non supprimé"
+	
 	fi
 	;;
 	
@@ -73,17 +125,35 @@ case $choix in
 	fi 
 	 ;;
 	
+	#recherche de paquet/logiciel
 	5) echo ""
-	apt list --installed | awk -F "/" '{print $1}' ;;
+	apt list --installed | awk -F "/" '{print $1}' 
+	echo ""
+	echo "En cherchez vous en un en particulier? "
+	read -p "o/n : " recherche
+	case $recherche in
+		#On souhaite en chercher un en particuler
+		o) echo ""
+		read -p "Lequel recherchez vous? " logiciel_recherche
+		#verification que le paquet est installé
+		if apt list --installed | awk -F "/" '{print $1}' | grep "$logiciel_recherche"
+			then apt list --installed | awk -F "/" '{print $1}' | grep "$logiciel_recherche"
+			echo "$logiciel_recherche est bien présent sur cette machine"
+			else echo "$logiciel_recherche n'est pas présent sur cette machine"
+		fi
+		;;
+		n) return 0 
+		echo "Retour au menu précédent" ;;
+	esac
+	;;
 	
-	6)
+	6) execution_script
 	;;
 	
 	#retour au menu précédent
 	r) start ;;
 	
-	x) echo "Sortie du menu"
-	 exit 0 ;;
+	X|x) exit 0 ;;
 	
 	*) echo "Réponse mal comprise, réessayez en tapant le chiffre correspondant" ;;
 esac
