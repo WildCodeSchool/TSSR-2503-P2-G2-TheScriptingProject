@@ -8,12 +8,12 @@ Gestion_Utilisateur() {
 while true ;
 do
     echo "Choississez une option :"
-    echo "1. liste des utilisateurs"                    #INFO
-    echo "2. Création d'un utilisateur"                 #ACTION
-    echo "3. Supprimer un utilisateur"                  #ACTION
-    echo "4. Changement de mot de passe"                #ACTION
-    echo "5. Désactivation de compte utilisateur"       #ACTION
-    echo "6. Gestion des groupes"                       #ACTION
+    echo "1. liste des utilisateurs"                    
+    echo "2. Création d'un utilisateur"                 
+    echo "3. Supprimer un utilisateur"                  
+    echo "4. Changement de mot de passe"                
+    echo "5. Désactivation de compte utilisateur"       
+    echo "6. Gestion des groupes"                       
     echo "X. Quitter"
     read -p "Votre choix : " choix
     case $choix in
@@ -129,13 +129,13 @@ do
 done
 }
 
-####################### FONCTION PRINCIPALE -- GESTION_AVANCEE ##############################
+####################### FONCTION PRINCIPALE -- GESTION_SYSTEME ##############################
 
-Gestion_Avancer() {
+Gestion_Systeme() {
 # Boucle pour relancer la fonction
 while true ;
 do
-    echo "Bienvenue dans la gestion avancée du système !"
+    echo "Bienvenue dans la gestion du système !"
     echo "Que voulez-vous faire ? :"
     echo "1. Obtenir une information"
     echo "2. Effectuer une action"
@@ -151,7 +151,7 @@ do
         X|x)
             echo "Retour à l'accueil"
             # Appel du squelette principale
-            Gestion_Systeme
+            Start
             ;;
         *)
             echo "Choix invalide. Veuillez réessayer."
@@ -161,7 +161,7 @@ do
 done
 }
 
-####################### FONCTION SECONDAIRE -- GESTION_AVANCEE ##############################
+####################### FONCTION SECONDAIRE -- GESTION_SYSTEME ##############################
 information_systeme() {
     echo " Vous êtes à l'intérieur du système !"
     echo " Que voulez-vous savoir ?"
@@ -223,7 +223,7 @@ dossier_log="log"
                 ;;
     esac
 }
-####################### FONCTION SECONDAIRE -- GESTION_AVANCEE ##############################
+####################### FONCTION SECONDAIRE -- GESTION_SYSTEME ##############################
 action_systeme() {
     echo " Que souhaitez-vous effectuer ?"
     echo "1. Arrêter le système"
@@ -273,16 +273,6 @@ action_systeme() {
 
 
 #################### LANCEMENT DU SQUELETTE ##########################
-echo "Tu te trouve dans la gestion des utilisateurs !"
-read -p "Voulez-vous gérer les utilisateurs ? (O/N) " choix
-if [[ $choix = "O" || $choix = "o" ]]; then
-    Gestion_Utilisateur
-else
-    echo "Au revoir !"
-    exit 0
-fi
-
-
 
 
 
