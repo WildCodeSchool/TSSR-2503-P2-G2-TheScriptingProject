@@ -121,8 +121,8 @@ echo "Que voulez vous faire :"
 echo "1) Activer/désactiver les connexions avec une adresse IP spécifique"
 echo "2) Activer/désactiver les connexions via ssh"
 echo "a) Annuler et réinitialiser par défaut"
-echo "r) Retour"
-echo "x) Quitter"
+echo "R) Menu Précédent"
+echo "X) Quitter"
 read -p "Votre réponse : " choix
 case $choix in
 	#Activation/désactivation des connexions IP avec une adresse donnée
@@ -154,10 +154,10 @@ case $choix in
 		;;
 	esac ;;
 	
-	r) security  
+	R|r) security  
 	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Retour vers le menu Security" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
 	
-	x) exit 0  
+	X|x) exit 0  
 	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Sortie du script" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
 	
 	*) echo "Réponse mal comprise, réessayez en tapant le chiffre correspondant" ;;	
@@ -254,8 +254,8 @@ echo "Que voulez vous faire ? "
 echo "1) Voir l'adresse MAC"
 echo "2) Voir les adresses IP des interfaces"
 echo "3) Voir le nombre d'interfaces"
-echo "r) Retour"
-echo "x) Quitter"
+echo "R) Menu Principal"
+echo "X) Quitter"
 read -p "Votre réponse : " choix
 case $choix in
 	#Voir l'adresse MAC IL MANQUE SSH
@@ -274,12 +274,13 @@ case $choix in
   	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Infos nombre d'interfaces connectées à $HOSTNAME" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
 	
 	#retour au menu précédent
-	r) start
+	R|r) start
  	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Retour au premier menu" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
 	
-	x) echo "Sortie du menu"
- 	exit 0 
-  	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Sortie du menu reseaux" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
+	X|x)
+	   exit 0  
+	   echo "A bientôt !"
+  	   echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Sortie du menu reseaux" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
 	
 	*) echo "Réponse mal comprise, réessayez en tapant le chiffre correspondant" ;;
 esac
@@ -291,7 +292,7 @@ done
 #####################################
 
 Gestion_Droits() {
-true ;
+while true ;
 do
     echo "Bienvenu dans la gestion des droits, choisissez une option :"
     echo "1. Droits/Permissions de l'utilisateur sur un dossier :"
@@ -306,7 +307,7 @@ do
                 continue
             else
                 echo "L'utilisateur $user n'existe pas. Veuillez le créer d'abord."
-                Gestion_Utilisateur
+                Gestion_Droits
                 continue
             fi
             read -p "Nom du dossier : " dossier
@@ -315,7 +316,7 @@ do
                 continue
             else
                 echo "Le dossier $dossier n'existe pas. Veuillez le créer d'abord."
-                Gestion_Utilisateur
+                Gestion_Droits
                 continue
             fi
             sudo chown $user:$user $dossier
@@ -328,7 +329,7 @@ do
                 continue
             else
                 echo "L'utilisateur $user n'existe pas. Veuillez le créer d'abord."
-                Gestion_Utilisateur
+                Gestion_Droits
                 continue
             fi
             read -p "Nom du fichier : " fichier
@@ -337,15 +338,17 @@ do
                 continue
             else
                 echo "Le fichier $fichier n'existe pas. Veuillez le créer d'abord."
-                Gestion_Utilisateur
+                Gestion_Droits
                 continue
             fi
             sudo chown $user:$user $fichier
             echo "Droits de l'utilisateur $user sur le fichier $fichier modifiés."
-        X|x)
-            Gestion_Utilisateur
-            echo "Vous êtes de retour dans le menu principal."
             ;;
+        R|r)
+            security
+            ;;
+        X|x) exit 0
+            echo " A bientôt"
         *)
             echo "Choix invalide, veuillez réessayer."
             Gestion_Droits
@@ -359,23 +362,25 @@ done
 #Fonction script à distance
 execution_script()
 {
-# Sur quelle machine distante ?
-echo ""
-echo "Sur quelle machine voulez-vous exécuter un script?" 
-echo "1) CLILIN01"
-echo "2) CLIWIN01"
-echo "3) SRVWIN01"
+	# Sur quelle machine distante ?
+	echo ""
+	echo "Sur quelle machine voulez-vous exécuter un script?" 
+	echo "1) CLILIN01"
+	echo "2) CLIWIN01"
+	echo "3) SRVWIN01"
 #Pour SRVLX01; on aura une erreur car c'est la machine actuelle
-echo "4) SRVLX01"
-read -p "Votre réponse : " machine
+	echo "4) SRVLX01"
+	echo "R) Menu précédent"
+	echo "X) Quitter"
+	read -p "Votre réponse : " machine
 # Sur quelle machine distante ?
-echo ""
-echo "Sur quel utilisateur voulez-vous exécuter un script?"
-read -p "Votre réponse : " user
-echo ""
-echo "Quel est le nom du script que vous voulez exécuter?"
-read -p "Votre réponse : " script
-case $machine in 
+	echo ""
+	echo "Sur quel utilisateur voulez-vous exécuter un script?"
+	read -p "Votre réponse : " user
+	echo ""
+	echo "Quel est le nom du script que vous voulez exécuter?"
+	read -p "Votre réponse : " script
+	case $machine in 
  		1) IP=$172.16.20.30
  		ssh $user@$IP $script ;;
  		
@@ -393,6 +398,11 @@ case $machine in
  			n) echo "Retour au menu précédent"
  			repertoire_logiciel ;;
  		esac
+ 		R|r) repertoire_logiciel;;
+ 		X|x) exit 0
+ 		echo " A bientôt !"
+ 		;;
+ 		
 esac
 
 }
@@ -405,6 +415,7 @@ repertoire_logiciel()
 {
 while true; do
 echo ""
+echo -e "\t Bienvenu dans le menu Répertoire/logiciel "
 echo "Que voulez vous faire ? "
 echo "1) Créer un répertoire"
 echo "2) Suppression d'un répertoire"
@@ -412,8 +423,8 @@ echo "3) Installer un logiciel"
 echo "4) Désinstaller un logiciel"
 echo "5) Voir la liste des applications et paquets installés"
 echo "6) Executer de script sur machine distante"
-echo "r) Retour"
-echo "x) Quitter"
+echo "R) Menu Principal"
+echo "X) Quitter"
 read -p "Votre réponse : " choix
 case $choix in
 	#Création du repertoire
@@ -507,9 +518,11 @@ case $choix in
 	;;
 	
 	#retour au menu précédent
-	r) start ;;
+	R|r) start 
+		echo "Retour dans le menu principal" ;;
 	
-	X|x) exit 0 ;;
+	X|x) exit 0 
+	echo " A bientôt ! ";;
 	
 	*) echo "Réponse mal comprise, réessayez en tapant le chiffre correspondant" ;;
 esac
@@ -519,35 +532,20 @@ done
 
 ###################################################
 
-
-
-
-#Lancement du 1er menu : start
-start
-
-
-#case 1) sudo adduser <$> nom_groupe
-
-
-#Choix = Demande d'information
-exit 0
-
-#!/bin/bash
-
-
-
 ########################## Fonction PRINCIPALE Gestion Utilisateur  ##############################
 
 Gestion_Utilisateur() {
 while true ;
 do
+    echo -e "\t Bienvenu dans le menu de gestion d'utilisateurs !"
     echo "Choississez une option :"
     echo "1. liste des utilisateurs"                    
     echo "2. Création d'un utilisateur"                 
     echo "3. Supprimer un utilisateur"                  
     echo "4. Changement de mot de passe"                
     echo "5. Désactivation de compte utilisateur"       
-    echo "6. Gestion des groupes"                       
+    echo "6. Gestion des groupes"   
+    echo "R. Menu Principale"                    
     echo "X. Quitter"
     read -p "Votre choix : " choix
     case $choix in
@@ -580,20 +578,14 @@ do
         6)
             Gestion_Groupe
             ;;
-        X|x)
-            echo "Voulez-vous sortir ou revenir au menu précédent ? (Sorti/Menu précédent)"
-            read -p "Votre choix : " choix
-            if [[ $choix = "Sorti" || $choix = "sorti" ]]; then
-                exit 0
-            echo "A Bientôt !"
-            elif [[ $choix = "Menu précédent" || $choix = "menu précédent" ]]; then
-                echo "Vous êtes de retour dans le menu principal."
-                # Appel du squelette principale
-                Gestion_Systeme
-            else
-                Gestion_Utilisateur
-            fi
+        R|r)
+        	# Appel du squelette principale
+            start
+            echo "Retour au menu Principale"
             ;;
+        X|x)
+            exit 0
+            echo "A Bientôt"
         *)
             echo "Choix invalide, veuillez réessayer."
             Gestion_Utilisateur
@@ -611,7 +603,8 @@ do
     echo "1. Ajouter un utilisateur à un groupe d'administration"
     echo "2. Ajouter un utilisateur à un groupe"
     echo "3. Sortie d'un utilisateur d'un groupe"
-    echo "X. Revenir au menu précédent"
+    echo "R. Retour au menu précedent"
+    echo "X. Quitter"
     read -p "Votre choix : " choix
     case $choix in
         1)
@@ -657,9 +650,14 @@ do
             sudo gpasswd -d $user $group
             echo "Utilisateur $user sorti du groupe $group."
             ;;
-        X|x)
+        R|r) 
             Gestion_Utilisateur
-            echo "Vous êtes de retour dans le menu principal."
+            
+            ;;
+            
+        X|x)
+            exit 0
+            echo "A Bientôt !"
             ;;
         *)
             echo "Choix invalide, veuillez réessayer."
@@ -690,7 +688,7 @@ do
         X|x)
             echo "Retour à l'accueil"
             # Appel du squelette principale
-            Start
+            start
             ;;
         *)
             echo "Choix invalide. Veuillez réessayer."
@@ -812,3 +810,44 @@ action_systeme() {
 
 
 #################### LANCEMENT DU SQUELETTE ##########################
+
+start()
+{
+while true ;
+do
+echo ""
+echo -e "\t Bienvenue dans le menu d'adminitration "
+echo -e "\n Que voulez-vous faire ? "
+echo -e "\n1) Gérer les utilisateurs"
+echo "2) Gérer la sécurité"
+echo "3) Gérer le paramétrage réseaux"
+echo "4) Gérer les logiciels et répertoires"
+echo "5) Gérer le système"
+echo "x) Quitter"
+read -p "Votre réponse : " choix
+case $choix in
+    #direction vers gestion utilisateur = lancement fonction Gestion_Utilisateur
+    1) Gestion_Utilisateur ;;
+
+    #direction vers security = lancement fonction security
+    2) security ;;
+
+    #direction vers reseaux = lancement fonction reseaux
+    3) reseaux ;;
+
+    #direction vers repertoire_logiciel = lancement fonction repertoire_logiciel
+    4) repertoire_logiciel ;;
+
+    #direction vers Gestion_Systeme = lancement fonction Gestion_Systeme
+    5) Gestion_Systeme ;;
+
+    X|x) 
+    echo -e "\n\tAu revoir !"
+    exit 0
+    ;;
+
+    *) echo "Choix invalide. Veuillez réessayer." ;;
+esac
+done
+}
+start
