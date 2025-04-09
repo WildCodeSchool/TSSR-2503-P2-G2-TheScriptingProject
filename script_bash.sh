@@ -1,5 +1,7 @@
 #!/bin/bash
 
+
+
 # ====>   ScriptBash Sprint1
 # Squelette global
 
@@ -116,12 +118,12 @@
 
 regles()
 {
-echo ""
-echo "Que voulez vous faire :"
+echo -e "\n\t MENU REGLES DE PARE-FEU"
+echo -e "\n Que voulez vous faire :"
 echo "1) Activer/désactiver les connexions avec une adresse IP spécifique"
 echo "2) Activer/désactiver les connexions via ssh"
-echo "a) Annuler et réinitialiser par défaut"
-echo "R) Menu Précédent"
+echo "A) Annuler et réinitialiser par défaut"
+echo "R) Retour au menu Précédent"
 echo "X) Quitter"
 read -p "Votre réponse : " choix
 case $choix in
@@ -130,13 +132,17 @@ case $choix in
 	#On demande l'adresse
 	read -p "Avec quelle adresse IP ? " ip_specifique
 	case $ip_onoff in
+		#on autorise de recevoir des connexions depuis l'adresse ip renseignée : ip_onoff
 		o) sudo ufw allow from $ip_specifique
-		echo "Traffic entrant depuis l'adresse IP $ip_specifique autorisé"   
+		echo "Traffic entrant depuis l'adresse IP $ip_specifique autorisé" 
+		echo "Il est possible de voir toutes les règles en place dans 'Voir l'état du pare-feu'"
 		echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Activation traffic de $ip_specifique vers $IP" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
-	
+		
+		#inversement, on bloque les connexions avec l'adresse ip renseignée : ip_onoff
 		#Les "vérifications" se font automatiquement : il y a en sortie normale si la regle a été ajoutée ou non
 		n) sudo ufw deny out to $ip_specifique
-		echo "Traffic sortant vers l'adresse IP $ip_specifique bloqué"  
+		echo "Traffic sortant vers l'adresse IP $ip_specifique bloqué" 
+		echo "Il est possible de voir toutes les règles en place dans 'Voir l'état du pare-feu'"
 		echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Désactivation traffic de $IP vers $ip_specifique" | sudo tee -a /var/log/log_evt.log > /dev/null
 		;;
 	esac ;;
@@ -154,13 +160,17 @@ case $choix in
 		;;
 	esac ;;
 	
+	#Réinitialisation par défaut, attention le pare-feu est donc désactivé après ça
+	A|a) sudo ufw reset ;;
+	
 	R|r) security  
 	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Retour vers le menu Security" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
 	
-	X|x) exit 0  
-	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Sortie du script" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
+	X|x) echo -e "\n\tAu revoir !" 
+	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Sortie du script" | sudo tee -a /var/log/log_evt.log > /dev/null 
+  	exit 0 ;;
 	
-	*) echo "Réponse mal comprise, réessayez en tapant le chiffre correspondant" ;;	
+	*) echo "Choix invalide, veuillez réessayer" ;;	
 esac
 }
 
@@ -169,18 +179,19 @@ esac
 security()
 {
 while true; do
-echo ""
-echo "Que voulez vous faire ? "
-echo "1) Activer un pare-feu"
-echo "2) Désactiver un pare-feu"
-echo "3) Définir des règles de pare-feu"
-echo "4) Voir l'état du pare-feu"
-echo "5) Voir les ports ouverts"
-echo "6) Voir la dernière connexion d'un utilisateur"
-echo "7) Voir la date de dernier changement de mot de passe"
-echo "8) Voir le nombre d'interfaces"
-echo "r) Retour"
-echo "x) Quitter"
+echo -e "\n\t MENU GESTION DE LA SECURITE"
+echo -e "\n Que voulez vous faire ? "
+echo "1. Activer un pare-feu"
+echo "2. Désactiver un pare-feu"
+echo "3. Définir des règles de pare-feu"
+echo "4. Voir l'état du pare-feu"
+echo "5. Voir les ports ouverts"
+echo "6. Gérer les droits d'un utilisateur sur un dossier ou fichier"
+echo "7. Voir la dernière connexion d'un utilisateur"
+echo "8. Voir la date de dernier changement de mot de passe"
+echo "9. Voir le nombre d'interfaces"
+echo "R. Retour au menu précédent"
+echo "X. Quitter"
 read -p "Votre réponse : " choix
 case $choix in
 	#activation parefeu
@@ -209,22 +220,25 @@ case $choix in
 	sudo netstat -tlnpu
 	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Infos ports ouverts" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
 	
+	6) Gestion_Droits 
+	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Direction menu gestion des droits d'un utilisateur sur un dossier ou fichier" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
+	
 	#Dernière connexion utilisateur
-	6) echo ""
+	7) echo ""
 	read -p "Pour quel utilisateur ? " user
 	#Avoir que la premiere ligne
 	last -F $user | head -n 1 
 	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Infos dernière connexion utilisateur" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
 	
 	#Deriere modif  mdp
-	7) echo ""
+	8) echo ""
 	read -p "Pour quel utilisateur ? " user
 	#Avoir que la premiere ligne
 	sudo chage -l $user | head -n 1
 	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Infos dernier changement mot de passe" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
 	
 	#Liste sessions ouverte
-	8) echo ""
+	9) echo ""
 	read -p "Pour quel utilisateur ? " user
 	w $user
 	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Infos liste des sessions ouvertes pour $user" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
@@ -232,10 +246,11 @@ case $choix in
 	r) start  
 	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Retour vers le menu Start" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
 	
-	x) exit 0  
-	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Sortie du script" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
+	x) echo -e "\n\tAu revoir !" 
+	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Sortie du script" | sudo tee -a /var/log/log_evt.log > /dev/null 
+    	exit 0 ;;
 	
-	*) echo "Réponse mal comprise, réessayez en tapant le chiffre correspondant" ;;
+	*) echo "Choix invalide, veuillez réessayer" ;;
 esac
 done
 }
@@ -249,12 +264,12 @@ done
 reseaux()
 {
 while true; do
-echo ""
-echo "Que voulez vous faire ? "
+echo -e "\n\t MENU GESTION DU RESEAU"
+echo -e "\nQue voulez vous faire ? "
 echo "1) Voir l'adresse MAC"
 echo "2) Voir les adresses IP des interfaces"
 echo "3) Voir le nombre d'interfaces"
-echo "R) Menu Principal"
+echo "R) Retour au menu précédent"
 echo "X) Quitter"
 read -p "Votre réponse : " choix
 case $choix in
@@ -277,12 +292,11 @@ case $choix in
 	R|r) start
  	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Retour au premier menu" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
 	
-	X|x)
-	   exit 0  
-	   echo "A bientôt !"
-  	   echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Sortie du menu reseaux" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
+	X|x) echo -e "\n\tAu revoir !"
+  	   echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Sortie du menu reseaux" | sudo tee -a /var/log/log_evt.log > /dev/null 
+       exit 0 ;;
 	
-	*) echo "Réponse mal comprise, réessayez en tapant le chiffre correspondant" ;;
+	*) echo "Choix invalide, veuillez réessayer" ;;
 esac
 done
 
@@ -294,10 +308,12 @@ done
 Gestion_Droits() {
 while true ;
 do
-    echo "Bienvenu dans la gestion des droits, choisissez une option :"
+    echo -e "\n\t MENU GESTION DES DROITS"
+    echo -e "\n Que voulez-vous modifier ?"
     echo "1. Droits/Permissions de l'utilisateur sur un dossier :"
     echo "2. Droits/Permissions de l'utilisateur sur un fichier :"
-    echo "X. Revenir au menu précédent"
+    echo "R. Retour au menu précédent"
+    echo "X. Quitter"
     read -p "Votre choix : " choix
     case $choix in
         1)
@@ -342,15 +358,15 @@ do
                 continue
             fi
             sudo chown $user:$user $fichier
-            echo "Droits de l'utilisateur $user sur le fichier $fichier modifiés."
+            echo "Droits de l'utilisateur $user sur le fichier $fichier modifiés"
             ;;
         R|r)
             security
             ;;
-        X|x) exit 0
-            echo " A bientôt"
+        X|x) echo -e "\n\tAu revoir !"
+        exit 0 ;;
         *)
-            echo "Choix invalide, veuillez réessayer."
+            echo "Choix invalide, veuillez réessayer"
             Gestion_Droits
             ;;
     esac
@@ -363,45 +379,52 @@ done
 execution_script()
 {
 	# Sur quelle machine distante ?
-	echo ""
-	echo "Sur quelle machine voulez-vous exécuter un script?" 
+	echo -e "\n Sur quelle machine voulez-vous exécuter un script?" 
 	echo "1) CLILIN01"
 	echo "2) CLIWIN01"
 	echo "3) SRVWIN01"
 #Pour SRVLX01; on aura une erreur car c'est la machine actuelle
 	echo "4) SRVLX01"
-	echo "R) Menu précédent"
+	echo "R) Retour au menu précédent"
 	echo "X) Quitter"
 	read -p "Votre réponse : " machine
 # Sur quelle machine distante ?
-	echo ""
-	echo "Sur quel utilisateur voulez-vous exécuter un script?"
+	echo -e "\nSur quel utilisateur voulez-vous exécuter un script?"
 	read -p "Votre réponse : " user
-	echo ""
-	echo "Quel est le nom du script que vous voulez exécuter?"
+	echo -e "\nQuel est le nom du script que vous voulez exécuter?"
 	read -p "Votre réponse : " script
 	case $machine in 
- 		1) IP=$172.16.20.30
- 		ssh $user@$IP $script ;;
+ 		1) ip=$172.16.20.30
+ 		ssh $user@$ip $script 
+ 		echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Execution du script $script sur la machine $ip par l'user $user" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
  		
- 		2) IP=$172.16.20.20
- 		ssh $user@$IP $script ;;
+ 		2) ip=$172.16.20.20
+ 		ssh $user@$ip $script 
+ 		echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Execution du script $script sur la machine $ip par l'user $user" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
  		
- 		3) IP=$172.16.20.5
- 		ssh $user@$IP $script ;;
+ 		3) ip=$172.16.20.5
+ 		ssh $user@$ip $script 
+ 		echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Execution du script $script sur la machine $ip par l'user $user" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
  		
- 		4) echo "Vous êtes déjà sur cette machine, voulez vous exécuter le scipt?"
+ 		4) echo "Vous êtes déjà sur cette machine, voulez vous exécuter le scipt? "
  		echo "o/n"
  		read -p "Votre réponse : " reponse
  		case reponse in
- 			o) ./$script ;;
+ 			o) ./$script 
+ 			echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Execution du script $script sur la machine $ip par l'user $user" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
  			n) echo "Retour au menu précédent"
- 			repertoire_logiciel ;;
- 		esac
- 		R|r) repertoire_logiciel;;
- 		X|x) exit 0
- 		echo " A bientôt !"
+ 			repertoire_logiciel 
+ 			echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Retour au menu repertoire/logiciel" | sudo tee -a /var/log/log_evt.log > /dev/null 
+ 		esac ;;
+ 		R|r) repertoire_logiciel 
+ 		echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Retour au menu repertoire/logiciel" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
+
+ 		X|x) echo -e "\n\tAu revoir !"
+ 		echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Sortie du script" | sudo tee -a /var/log/log_evt.log > /dev/null
+       		exit 0
  		;;
+
+        *) echo "Choix invalide, veuillez réessayer"
  		
 esac
 
@@ -415,8 +438,8 @@ repertoire_logiciel()
 {
 while true; do
 echo ""
-echo -e "\t Bienvenu dans le menu Répertoire/logiciel "
-echo "Que voulez vous faire ? "
+echo -e "\n\t MENU GESTION REPERTOIRES/LOGICIELS "
+echo -e "\n Que voulez vous faire ? "
 echo "1) Créer un répertoire"
 echo "2) Suppression d'un répertoire"
 echo "3) Installer un logiciel"
@@ -437,6 +460,7 @@ case $choix in
 		#Verification repertoire créée
 		if [ -d $repertoire ]
 			then echo "Répertoire $repertoire bien créée"
+			
 			else echo "Erreur, répertoire $repertoire non créée"
 		fi
 	fi
@@ -518,13 +542,12 @@ case $choix in
 	;;
 	
 	#retour au menu précédent
-	R|r) start 
-		echo "Retour dans le menu principal" ;;
+	R|r) start ;;
 	
-	X|x) exit 0 
-	echo " A bientôt ! ";;
+	X|x) echo -e "\n\tAu revoir !"
+    	exit 0 ;;
 	
-	*) echo "Réponse mal comprise, réessayez en tapant le chiffre correspondant" ;;
+	*) echo "Choix invalide, veuillez réessayer" ;;
 esac
 done
 
@@ -537,15 +560,15 @@ done
 Gestion_Utilisateur() {
 while true ;
 do
-    echo -e "\t Bienvenu dans le menu de gestion d'utilisateurs !"
-    echo "Choississez une option :"
-    echo "1. liste des utilisateurs"                    
+    echo -e "\n\t MENU GESTION DES UTILISATEURS"
+    echo -e "\n Choississez une option :"
+    echo "1. Voir la liste des utilisateurs"                    
     echo "2. Création d'un utilisateur"                 
     echo "3. Supprimer un utilisateur"                  
     echo "4. Changement de mot de passe"                
     echo "5. Désactivation de compte utilisateur"       
     echo "6. Gestion des groupes"   
-    echo "R. Menu Principale"                    
+    echo "R. Menu précédent"                    
     echo "X. Quitter"
     read -p "Votre choix : " choix
     case $choix in
@@ -579,16 +602,13 @@ do
             Gestion_Groupe
             ;;
         R|r)
-        	# Appel du squelette principale
+        	# Appel du menu principal
             start
-            echo "Retour au menu Principale"
             ;;
-        X|x)
-            exit 0
-            echo "A Bientôt"
-        *)
-            echo "Choix invalide, veuillez réessayer."
-            Gestion_Utilisateur
+        X|x) echo -e "\n\tAu revoir !"
+            exit 0 ;;
+
+        *) echo "Choix invalide, veuillez réessayer."
             ;;
     esac
 done
@@ -599,7 +619,8 @@ done
 Gestion_Groupe() {
 while true ;
 do
-    echo "Bienvenu dans la gestion des groupes, choisissez une option :"
+    echo -e "\n\t GESTION DES GROUPES"
+    echo -e "\n Que voulez-vous faire?"
     echo "1. Ajouter un utilisateur à un groupe d'administration"
     echo "2. Ajouter un utilisateur à un groupe"
     echo "3. Sortie d'un utilisateur d'un groupe"
@@ -652,15 +673,13 @@ do
             ;;
         R|r) 
             Gestion_Utilisateur
-            
             ;;
             
         X|x)
             exit 0
-            echo "A Bientôt !"
+            echo -e "\n\tAu revoir !"
             ;;
-        *)
-            echo "Choix invalide, veuillez réessayer."
+        *) echo "Choix invalide, veuillez réessayer."
             ;;
     esac
 done
@@ -672,11 +691,12 @@ Gestion_Systeme() {
 # Boucle pour relancer la fonction
 while true ;
 do
-    echo "Bienvenue dans la gestion du système !"
-    echo "Que voulez-vous faire ? :"
+    echo -e "\n\t MENU GESTION DU SYSTEME"
+    echo -e "\n Que voulez-vous faire ? "
     echo "1. Obtenir une information"
     echo "2. Effectuer une action"
-    echo "X. Retour"
+    echo "R. Retour au menu précédent"
+    echo "X. Quitter"
     read -p "Votre choix : " choix
     case $choix in
         1)
@@ -685,30 +705,27 @@ do
         2)
             action_systeme
             ;;
-        X|x)
-            echo "Retour à l'accueil"
-            # Appel du squelette principale
-            start
+        R|r) start ;;
+        X|x) echo -e "\n\tAu revoir !"
+            exit 0
             ;;
-        *)
-            echo "Choix invalide. Veuillez réessayer."
-            return 1
-            ;;
+        *) echo "Choix invalide. Veuillez réessayer." ;;
     esac
 done
 }
 
 ####################### FONCTION SECONDAIRE -- GESTION_SYSTEME ##############################
 information_systeme() {
-    echo " Vous êtes à l'intérieur du système !"
-    echo " Que voulez-vous savoir ?"
+    echo -e "\n\t MENU D'INFORMATIONS DU SYSTEME"
+    echo -e "\n Que voulez-vous savoir ?"
     echo "1. Type de CPU, nombre de coeurs, etc."
-    echo "2. Memoire RAM total"
+    echo "2. Memoire RAM totale"
     echo "3. Utilisation de la mémoire RAM"
     echo "4. Utilisation du disque"
     echo "5; Utilisation du processeur"
     echo "6. Version du système d'exploitation"
-    echo "X. Revenir au menu principal"
+    echo "R. Revenir au menu précédent"
+    echo "X. Quitter"
     read -p "Votre choix : " choix
 # Initialisation des variables pour les logs
 fichier_log="info_$(hostname)_$(date +%Y-%m-%d).txt"
@@ -750,24 +767,25 @@ dossier_log="log"
                 cat /etc/os-release | tee -a $dossier_log/$fichier_log
                 echo "Les informations sur la version du système d'exploitation ont été enregistrées dans le fichier $dossier_log/$fichier_log"
                 ;;
-            X|x)
-                echo "Vous êtes de retour dans le menu principal."
-                ;;
-            *)
-                echo "Choix invalide. Veuillez réessayer."
-                # Appel pour redémarrer la fonction
-                information_systeme
-                ;;
+            R|r) Gestion_Systeme 
+            ;;
+
+            X|x) echo -e "\n\tAu revoir !"
+            exit 0 ;;
+            
+            *) echo "Choix invalide. Veuillez réessayer." ;;
     esac
 }
 ####################### FONCTION SECONDAIRE -- GESTION_SYSTEME ##############################
 action_systeme() {
-    echo " Que souhaitez-vous effectuer ?"
+    echo -e "\n\t MENU D'ACTION SUR LE SYSTEME"
+    echo -e "\n Que souhaitez-vous effectuer ?"
     echo "1. Arrêter le système"
     echo "2. Redémarrer le système"
     echo "3. Vérouiller le système (GNOME-ONLY)"
     echo "4. Mettre à jour le système"
-    echo "X. Revenir au menu principal"
+    echo "R. Retour au menu précédent"
+    echo "X. Quitter"
     read -p "Votre choix : " choix
     case $choix in
             1)
@@ -790,14 +808,11 @@ action_systeme() {
                 # Mise à jour du système
                 sudo apt update && sudo apt upgrade -y
                 ;;
-            X|x)
-                echo "Vous êtes de retour dans le menu principal."
+            R|♣r) Gestion_Systeme ;;
+            X|x) exit 0
+                echo -e "\n\tAu revoir !"
                 ;;
-            *)
-                echo "Choix invalide. Veuillez réessayer."
-                # Appel pour redémarrer la fonction
-                action_systeme
-                ;;
+            *) echo "Choix invalide. Veuillez réessayer." ;;
     esac
     echo "Action effectuée avec succès !"
 }
@@ -816,14 +831,14 @@ start()
 while true ;
 do
 echo ""
-echo -e "\t Bienvenue dans le menu d'adminitration "
+echo -e "\n\t BIENVENUE DANS LE MENU D'ADMINISTRATION"
 echo -e "\n Que voulez-vous faire ? "
-echo -e "\n1) Gérer les utilisateurs"
-echo "2) Gérer la sécurité"
-echo "3) Gérer le paramétrage réseaux"
-echo "4) Gérer les logiciels et répertoires"
-echo "5) Gérer le système"
-echo "x) Quitter"
+echo "1. Gérer les utilisateurs"
+echo "2. Gérer la sécurité"
+echo "3. Gérer le paramétrage réseaux"
+echo "4. Gérer les logiciels et répertoires"
+echo "5. Gérer le système"
+echo "X. Quitter"
 read -p "Votre réponse : " choix
 case $choix in
     #direction vers gestion utilisateur = lancement fonction Gestion_Utilisateur
@@ -841,8 +856,7 @@ case $choix in
     #direction vers Gestion_Systeme = lancement fonction Gestion_Systeme
     5) Gestion_Systeme ;;
 
-    X|x) 
-    echo -e "\n\tAu revoir !"
+    X|x) echo -e "\n\tAu revoir !"
     exit 0
     ;;
 
