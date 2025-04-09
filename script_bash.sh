@@ -47,10 +47,15 @@ do
             Gestion_Groupe
             ;;
         X|x)
-            echo "Voulez-vous sortir ou revenir au menu précédent ? (O/N)"
+            echo "Voulez-vous sortir ou revenir au menu précédent ? (Sorti/Menu précédent)"
             read -p "Votre choix : " choix
-            if [[ $choix = "O" || $choix = "o" ]]; then
+            if [[ $choix = "Sorti" || $choix = "sorti" ]]; then
                 exit 0
+            echo "A Bientôt !"
+            elif [[ $choix = "Menu précédent" || $choix = "menu précédent" ]]; then
+                echo "Vous êtes de retour dans le menu principal."
+                # Appel du squelette principale
+                Gestion_Systeme
             else
                 Gestion_Utilisateur
             fi
@@ -178,7 +183,7 @@ fichier_log="info_$(hostname)_$(date +%Y-%m-%d).txt"
 dossier_log="log"
     case $choix in
             1)
-                echo "Type de CPU, nombre de coeurs, etc. :"
+                echo  "Type de CPU, nombre de coeurs, etc. :"
                 # Enregistrement des informations dans le fichier "info_<ordinateur>-GEN_<Date>.txt"
                 lscpu | tee -a $dossier_log/$fichier_log
                 echo "Les informations sur le CPU ont été enregistrées dans le fichier $dossier_log/$fichier_log"
