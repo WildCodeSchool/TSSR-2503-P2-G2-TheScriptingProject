@@ -460,30 +460,80 @@ case $choix in
 	r) infos
 	echo ""
 	echo "Retour au menu d'action sur le serveur :" 
-	echo "";;
+	echo ""  
 	x) echo "Sortie du menu"
+ 	exit 0  
+	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Sortie du script" | sudo tee -a /var/log/log_evt.log > /dev/null
+	;;
 	
 	*) echo "Réponse mal comprise, réessayez en tapant le chiffre correspondant" ;;
-	 exit 0
 esac
 }
 
 
 #####################################
 
-#!/bin/bash
+regles()
+{
+echo ""
+echo "Que voulez vous faire :"
+echo "1) Activer/désactiver les connexions avec une adresse IP spécifique"
+echo "2) Activer/désactiver les connexions via ssh"
+echo "a) Annuler et réinitialiser par défaut"
+echo "r) Retour"
+echo "x) Quitter"
+read -p "Votre réponse : " choix
+case $choix in
+	#Activation/désactivation des connexions IP avec une adresse donnée
+	1) read -p 'Souhaitez vous activer (o) ou désactiver (n) les connexions avec une adresse IP spécifique ? ' ip_onoff
+	#On demande l'adresse
+	read -p "Avec quelle adresse IP ? " ip_specifique
+	case $ip_onoff in
+		o) sudo ufw allow from $ip_specifique
+		echo "Traffic entrant depuis l'adresse IP $ip_specifique autorisé"   
+		echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Activation traffic de $ip_specifique vers $IP" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
+	
+		#Les "vérifications" se font automatiquement : il y a en sortie normale si la regle a été ajoutée ou non
+		n) sudo ufw deny out to $ip_specifique
+		echo "Traffic sortant vers l'adresse IP $ip_specifique bloqué"  
+		echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Désactivation traffic de $IP vers $ip_specifique" | sudo tee -a /var/log/log_evt.log > /dev/null
+		;;
+	esac ;;
+	
+	#Activation/désactivation de ssh	
+	2) read -p "Souhaitez vous activer (o) ou désactiver (n) les connexions via ssh ?" ssh_onoff
+	case $ssh_onoff in
+		o) sudo ufw allow in ssh
+		echo "Connexion via autorisée" 
+		echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Activation connexion SSH" | sudo tee -a /var/log/log_evt.log > /dev/null
+		;;
+		n) sudo ufw deny in ssh
+		echo "Connexion via bloquée"  
+		echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Désactivation connexion SSH " | sudo tee -a /var/log/log_evt.log > /dev/null
+		;;
+	esac ;;
+	
+	r) security  
+	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Retour vers le menu Security" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
+	
+	x) exit 0  
+	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Sortie du script" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
+	
+	*) echo "Réponse mal comprise, réessayez en tapant le chiffre correspondant" ;;	
+esac
+}
 
 
-#SECURITY
-function security()
+
+security()
 {
 while true; do
 echo ""
 echo "Que voulez vous faire ? "
 echo "1) Activer un pare-feu"
 echo "2) Désactiver un pare-feu"
-echo "3) Voir l'état du pare-feu"
-echo "4) Voir les règles établies"
+echo "3) Définir des règles de pare-feu"
+echo "4) Voir l'état du pare-feu"
 echo "5) Voir les ports ouverts"
 echo "6) Voir la dernière connexion d'un utilisateur"
 echo "7) Voir la date de dernier changement de mot de passe"
@@ -494,50 +544,60 @@ read -p "Votre réponse : " choix
 case $choix in
 	#activation parefeu
 	1) echo ""
-	sudo ufw enable ;;
+	sudo ufw enable
+	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Activation pare-feu" | sudo tee -a /var/log/log_evt.log > /dev/null
+	;;
 	
 	#désactivation parefeu
 	2) echo ""
-	sudo ufw disable ;;
+	sudo ufw disable 
+	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Désactivation pare-feu" | sudo tee -a /var/log/log_evt.log > /dev/null
+	;;
+	
+	#definir les règles de pare-feu -> fonction regles
+	3) regles  
+	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Direction vers le menu Regles" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
 	
 	#voir l'état pare-feu
-	3) echo ""
-	sudo ufw status ;;
-	
-	#lister les règles de pare-feu (Pas sur de la commande, a voir avec Dom)
 	4) echo ""
-	sudo ufw status numbered ;;
+	sudo ufw status
+	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Voir état du pare-feu" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
 	
 	#Voir les ports ouverts
 	5) echo ""
-	sudo netstat -tlnpu ;;
+	sudo netstat -tlnpu
+	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Infos ports ouverts" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
 	
 	#Dernière connexion utilisateur
 	6) echo ""
 	read -p "Pour quel utilisateur ? " user
-	last -F $user | head -n 1 ;;
+	#Avoir que la premiere ligne
+	last -F $user | head -n 1 
+	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Infos dernière connexion utilisateur" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
 	
 	#Deriere modif  mdp
 	7) echo ""
 	read -p "Pour quel utilisateur ? " user
-	sudo chage -l user | head -n 1 ;;
+	#Avoir que la premiere ligne
+	sudo chage -l $user | head -n 1
+	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Infos dernier changement mot de passe" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
 	
 	#Liste sessions ouverte
 	8) echo ""
 	read -p "Pour quel utilisateur ? " user
-	w $user ;;
+	w $user
+	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Infos liste des sessions ouvertes pour $user" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
 	
-	r) start ;;
+	r) start  
+	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Retour vers le menu Start" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
 	
-	x) echo "Sortie du menu"
- 	exit 0 ;;
+	x) exit 0  
+	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Sortie du script" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
 	
 	*) echo "Réponse mal comprise, réessayez en tapant le chiffre correspondant" ;;
 esac
 done
 }
-
-
 
 #######################################
 
@@ -560,21 +620,26 @@ read -p "Votre réponse : " choix
 case $choix in
 	#Voir l'adresse MAC IL MANQUE SSH
 	1) echo ""
-	ip a | grep "link/ether*" | awk -F " " '{print $2}' ;;
+	ip a | grep "link/ether*" | awk -F " " '{print $2}'  
+  	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Infos adresse mac de $HOSTNAME" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
 	
 	#Voir adresse IP des interfaces (pas besoin de SSH)
 	2) echo ""
-	cat /etc/hosts | grep "127*" ;;
+	cat /etc/hosts | grep "127*"  
+  	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Infos adresses IP des interfaces connectées avec $HOSTNAME" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
 	
 	#Voir le nombre d'interfaces (donc le nombre de lignes)
 	3) echo ""
-	cat /etc/hosts | grep "127*" | wc -l ;;
+	cat /etc/hosts | grep "127*" | wc -l 
+  	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Infos nombre d'interfaces connectées à $HOSTNAME" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
 	
 	#retour au menu précédent
-	r) start ;;
+	r) start
+ 	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Retour au premier menu" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
 	
 	x) echo "Sortie du menu"
- 	exit 0 ;;
+ 	exit 0 
+  	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Sortie du menu reseaux" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
 	
 	*) echo "Réponse mal comprise, réessayez en tapant le chiffre correspondant" ;;
 esac
