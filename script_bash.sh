@@ -112,461 +112,6 @@
 
 ###################################################
 
-#!/bin/bash
-
-
-
-
-
-#FONCTIONS
-
-#Le menu demande si on veut faire une action ou une demande d'information
-start()
-{
-echo ""
-echo "Voulez vous faire une action ou avoir une information ? "
-echo "1) Faire une action"
-echo "2) Avoir une information"
-echo "x) Quitter"
-read -p "Votre réponse : " choix1
-case $choix1 in
-	#direction vers les actions = lancement fonction ACTIONS
-	1) action ;;
-	
-	#direction vers les renseignements = lancement fonction INFOS
-	2) infos ;;
-esac
-return 0
-}
-
-################################################
-
-#Choix 1 = ACTION
-# texte informatif disant qu'on entre dans le menu actions
-action()
-{
-echo ""
-echo "Vous avez choisi de faire une action"
-echo ""
-echo "Voulez-vous cibler un serveur ou bien un client?"
-echo "1) Un serveur"
-echo "2) Un client"
-echo "r) Retour au menu précédent"
-echo "x) Quitter"
-read -p "Votre réponse : " cible
-case $cible in 
-	1) action_serveur ;;
-	2) action_client ;;
-	r) start ;;
-
-	x) echo "Sortie du menu"
- 	exit 0 ;;
-	
-	*) echo "Réponse mal comprise, réessayez en tapant le chiffre correspondant" ;;
-
-esac
-return 0
-}
-
-################################################
-
-
-#Choix 2 = SERVEUR
-# texte informatif disant qu'on entre dans le menu ACTION SERVEUR
-
-action_serveur()
-
-{
-echo ""
-echo "Vous avez choisi pour cible le serveur"
-echo ""
-echo "Que voulez-vous faire ? "
-echo "1) Gestion d'utilisateur"
-echo "2) Gestion de groupe"
-echo "r) Retour au menu précédent"
-echo "x) Quitter"
-read -p "Votre réponse : " choix
-case $choix in 
-	1) gestion_user ;;
-	2) gestion_groupe ;;
-	r) action ;;
-
-	x) echo "Sortie du menu"
- 	exit 0 ;;
-	
-	*) echo "Réponse mal comprise, réessayez en tapant le chiffre correspondant" ;;
-
-esac
-return 0
-}
-
-################################################
-
-
-#Choix 2 = CLIENT
-# texte informatif disant qu'on entre dans le menu ACTION CLIENT
-#Pour la tâche principale, le client est UBUNTU
-
-action_client()
-
-{
-echo ""
-echo "Vous avez choisi pour cible le client, à savoir, CLILIN01"
-echo ""
-echo "Que voulez-vous faire ? "
-echo "1) Arrêter/redemarrer/verrouiller"
-echo "2) Gestion de répertoire"
-echo "3) Gestion du parefeu"
-echo "4) Gestion de logiciel"
-echo "5) Prise en main à distance"
-echo "6) Mettre à jour le système"
-echo "r) Retour au menu précédent"
-echo "x) Quitter"
-read -p "Votre réponse : " choix
-case $choix in 
-	1) arv ;;
-	2) gestion_répertoire ;;
-	3) parefeu ;;
-	4) logiciel ;;
-	5) distance ;;
-	6) maj ;;
-	r) action ;;
-
-	x) echo "Sortie du menu"
- 	exit 0 ;;
-	
-	*) echo "Réponse mal comprise, réessayez en tapant le chiffre correspondant" ;;
-
-esac
-return 0
-}
-
-
-################################################
-
-#création d'un utilisateur
-creation_user()
-{
-echo ""
-echo "Vous avez choisi de créer un utilisateur"
-echo ""
-read -p "Entrez le nom d'utilisateur à créer " newUser
-if cat /etc/passwd | grep "$newUser" > /dev/null 
-	 then
-	 	echo "L'utilisateur existe déjà"
-	 	return 1
-	 else
-	 	sudo useradd $newUser
-#Vérification que le $newUser que a bien été créé
-	 	if cat /etc/passwd | grep "$newUser" > /dev/null 
-	 	then
-	 		echo "Ok, utilisateur créée"
-	 	else
-	 		echo "Erreur, utilisateur non créée"
-	 		return 1
-	 	fi
-fi
-return 0
-}
-
-##############################################
-
-#modification mdp
-modif_mdp()
-{
-echo ""
-echo "Vous avez choisi de modifier un mot de passe"
-echo ""
-read -p "De quel utilisateur voulez-vous modifier le mot de passe ? " User_mdp
-#read -p "Quel mdp? " mdp
-	sudo passwd $User_mdp
-return 0
-}
-
-################################################
-
-
-#supprimer user
-
-suppression()
-{
-echo ""
-echo "Vous avez choisi de faire supprimer un utilisateur"
-echo ""
-read -p "Quel utilisateur voulez-vous supprimer ? " utilisateur
-sudo userdel $utilisateur
-if cat /etc/passwd | grep "$utilisateur"
-	then echo "Erreur lors de la suppression"
-	else echo "Ok, utilisateur supprimé"
-fi
-return 0
-}
-
-###############################################
-
-#désactivation compte user local
-verrouillage()
-{
-echo ""
-echo "Vous avez choisi de verrouiller un utilisateur"
-echo ""
-read -p "Quel utilisateur voulez-vous désactiver ? " utilisateur
-sudo usermod -L $utilisateur
-echo "Utilisateur $utilisateur verrouillé"
-return 0
-}
-
-################################################
-################################################
-	
-#Choix = Action
-#Le menu demande si on veut faire une action sur l'utilisateur (serveur) ou sur un client
-#Choix Serveur=Utilisateur
-
-gestion_user()
-{
-echo ""
-echo "Vous avez choisi de faire une gestion d'utilisateur"
-echo ""
-#On rentre dans le choix de gestion de l'user, que veut on faire ?
-#Boucle while true; do AVANT pour qu'on voit les messages apapraitre et redemander le choix Que voulez vous faire
-while true; do
-
-echo "Que voulez-vous faire ? "
-echo "1) Création d'un nouvel utilisateur"
-echo "2) Modifier le mot de passe d'un utilisateur"
-echo "3) Supprimer un utilisateur"
-echo "4) Désactiver un utilisateur"
-echo "r) Retour au menu précédent"
-echo "x) Quitter"
-read -p "Votre réponse : " choix
-
-case $choix in
-	1) creation_user 
-	echo ""
-	echo "Retour au menu de gestion d'utilisateur :" 
-	echo "";;
-	2) modif_mdp 
-	echo ""
-	echo "Retour au menu de gestion d'utilisateur :" 
-	echo "";;
-	3) suppression 
-	echo ""
-	echo "Retour au menu de gestion d'utilisateur :" 
-	echo "";;
-	4) verrouillage 
-	echo ""
-	echo "Retour au menu de gestion d'utilisateur :" 
-	echo "";;
-	r) serveur_action 
-	echo ""
-	echo "Retour au menu d'action sur le serveur :" 
-	echo "";;
-	x) echo "Sortie du menu"
- 	exit 0 ;;
-	
-	*) echo "Réponse mal comprise, réessayez en tapant le chiffre correspondant" ;;
-esac
-done
-}
-
-#####################################
-
-
-#ajout user dans groupe local
-ajout_groupe_local()
-{
-echo ""
-echo "Vous avez choisi d'ajouter un utilisateur à un groupe"
-echo ""
-read -p "Entrez le nom de l'utilisateur à ajouter à un groupe : " user
-read -p "Entrez le nom du groupe auquel l'ajouter : " groupe
-sudo usermod -aG $groupe $user
-#vérification
-if cat /etc/group | grep "$groupe.*$user" > /dev/null 
-	 then
-	 	echo "L'utilisateur $user a été ajouté au groupe $groupe"
-	 	return 0
-	 else 
-  		echo "Erreur, l'utilisateur $user n'a pas été ajouté au groupe $groupe"
-    		return 1
-fi
-return 0
-}
-
-
-####################################################################
-
-
-
-#enlever user d'un groupe local
-sortie_groupe_local()
-{
-echo ""
-echo "Vous avez choisi d'enlever un utilisateur d'un groupe"
-echo ""
-read -p "Entrez le nom de l'utilisateur à enlever d'un groupe : " user
-read -p "Entrez le nom du groupe auquel l'enlever : " groupe
-sudo deluser $user $groupe
-#vérification
-if cat /etc/group | grep "$groupe.*$user" > /dev/null 
-	 then
-	 	echo "Erreur, l'utilisateur $user n'a pas été supprimé du groupe $groupe"
-    		return 1
-	 	
-	 else 
-  		echo "L'utilisateur $user a été supprimé du groupe $groupe"
-	 	return 0
-fi
-return 0
-}
-
-
-
-####################################################################
-
-
-
-#ajout user dans groupe admin
-ajout_groupe_admin()
-{
-echo ""
-echo "Vous avez choisi d'ajouter un utilisateur à un groupe admin"
-echo ""
-read -p "Entrez le nom de l'utilisateur à ajouter à un groupe : " user
-sudo usermod -aG sudo $user
-#vérification
-if cat /etc/group | grep "sudo.*$user" > /dev/null 
-	 then
-	 	echo "L'utilisateur $user a été ajouté au groupe admin"
-	 	return 0
-	 else 
-  		echo "Erreur, l'utilisateur $user n'a pas été ajouté au groupe admin"
-    		return 1
-fi
-return 0
-}
-
-
-####################################################################
-
-
-gestion_groupe()
->>>>>>> main
-{
-echo ""
-echo "Vous avez choisi de faire une gestion de groupe"
-echo ""
-#On rentre dans le choix de gestion de groupe, que veut on faire ?
-#Boucle while true; do AVANT pour qu'on voit les messages apapraitre et redemander le choix Que voulez vous faire
-while true; do
-
-echo "1) Ajout d'utilisateur dans un groupe local"
-echo "2) Sortie d'utilisateur dans un groupe local"
-echo "3) Ajout d'utilisateur dans un groupe administrateur"
-echo "r) Retour au menu précédent"
-echo "x) Quitter"
-read -p "Que voulez-vous faire ? " choix
-
-case $choix in
-	1) ajout_groupe_local
-	echo ""
-	echo "Retour au menu :" 
-	echo "";;
-	2) sortie_groupe_local
-	echo ""
-	echo "Retour au menu :" 
-	echo "";;
-	3) ajout_groupe_admin
-	echo ""
-	echo "Retour au menu :" 
-	echo "";;
-	r) gestion_groupe
-	echo ""
-	echo "Retour au menu d'action sur le serveur :" 
-	echo "";;
-	x) echo "Sortie du menu"
- 	exit 0 ;;
-	
-	*) echo "Réponse mal comprise, réessayez en tapant le chiffre correspondant" ;;
-esac
-done
-}
-
-
-
-##################################
-
-
-#Choix 1 = INFOS
-# texte informatif disant qu'on entre dans le menu informations
-
-infos()
-
-{
-echo ""
-echo "Vous avez choisi d'avoir une information"
-echo ""
-echo "Voulez-vous cibler un serveur ou bien un client?"
-echo "1) Un serveur"
-echo "2) Un client"
-echo "r) Retour au menu précédent"
-echo "x) Quitter"
-read -p "Votre réponse : " cible
-case $cible in 
-	1) infos_serveur ;;
-	2) infos_client ;;
-	r) start ;;
-
-	x) echo "Sortie du menu"
- 	exit 0 ;;
-	
-	*) echo "Réponse mal comprise, réessayez en tapant le chiffre correspondant" ;;
-
-esac
-return 0
-}
-
-
-################################################
-
-
-#Choix 2 = SERVEUR
-# texte informatif disant qu'on entre dans le menu INFOS SERVEUR
-
-infos_serveur()
-
-{
-echo ""
-echo "Vous avez choisi pour cible le serveur"
-echo ""
-echo "Sur quel thème cherchez-vous une information ? "
-echo "1) Droits et permissions"
-echo "2) Dates de modifications"
-# Soit à mettre maintenant, soit à mettre dans une catégorie, à voir
-echo "3) Liste des sessions ouverte par l'utilisateur"
-echo "r) Retour au menu précédent"
-echo "x) Quitter"
-read -p "Votre réponse : " choix
-case $choix in 
-	1) droits ;;
-	2) dates ;;
-	3) sessions ;;
-	r) infos
-	echo ""
-	echo "Retour au menu d'action sur le serveur :" 
-
-	echo ""  
-	x) echo "Sortie du menu"
- 	exit 0  
-	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Sortie du script" | sudo tee -a /var/log/log_evt.log > /dev/null
-	;;
-	
-	*) echo "Réponse mal comprise, réessayez en tapant le chiffre correspondant" ;;
-esac
-}
-
-
 #####################################
 
 regles()
@@ -986,3 +531,284 @@ start
 
 #Choix = Demande d'information
 exit 0
+
+#!/bin/bash
+
+
+
+########################## Fonction PRINCIPALE Gestion Utilisateur  ##############################
+
+Gestion_Utilisateur() {
+while true ;
+do
+    echo "Choississez une option :"
+    echo "1. liste des utilisateurs"                    
+    echo "2. Création d'un utilisateur"                 
+    echo "3. Supprimer un utilisateur"                  
+    echo "4. Changement de mot de passe"                
+    echo "5. Désactivation de compte utilisateur"       
+    echo "6. Gestion des groupes"                       
+    echo "X. Quitter"
+    read -p "Votre choix : " choix
+    case $choix in
+        1)
+            echo "Liste des utilisateurs :" 
+            # Enregistrement des utilisateurs dans le fichier "info_<Utilisateur>-GEN_<Date>.txt"
+            cut -d: -f1 /etc/passwd | tee -a $dossier_log/$fichier_log
+            echo "Les utilisateurs ont été enregistrés dans le fichier $dossier_log/$fichier_log"
+            ;;
+        2)
+            read -p "Nom d'utilisateur à créer : " user
+            sudo useradd $user
+            echo "Utilisateur $user créé."
+            ;;
+        3)
+            read -p "Nom d'utilisateur à supprimer : " user
+            sudo userdel $user
+            echo "Utilisateur $user supprimé."
+            ;;
+        4)
+            read -p "Nom d'utilisateur pour changer le mot de passe : " user
+            sudo passwd $user
+            echo "Mot de passe changé pour l'utilisateur $user."
+            ;;
+        5)
+            read -p "Nom d'utilisateur à désactiver : " user
+            sudo usermod -L $user
+            echo "Compte utilisateur $user désactivé."
+            ;;
+        6)
+            Gestion_Groupe
+            ;;
+        X|x)
+            echo "Voulez-vous sortir ou revenir au menu précédent ? (Sorti/Menu précédent)"
+            read -p "Votre choix : " choix
+            if [[ $choix = "Sorti" || $choix = "sorti" ]]; then
+                exit 0
+            echo "A Bientôt !"
+            elif [[ $choix = "Menu précédent" || $choix = "menu précédent" ]]; then
+                echo "Vous êtes de retour dans le menu principal."
+                # Appel du squelette principale
+                Gestion_Systeme
+            else
+                Gestion_Utilisateur
+            fi
+            ;;
+        *)
+            echo "Choix invalide, veuillez réessayer."
+            Gestion_Utilisateur
+            ;;
+    esac
+done
+}
+
+######################## FONCTION SECONDAIRE -- GESTION_UTILISATEUR ######################################
+
+Gestion_Groupe() {
+while true ;
+do
+    echo "Bienvenu dans la gestion des groupes, choisissez une option :"
+    echo "1. Ajouter un utilisateur à un groupe d'administration"
+    echo "2. Ajouter un utilisateur à un groupe"
+    echo "3. Sortie d'un utilisateur d'un groupe"
+    echo "X. Revenir au menu précédent"
+    read -p "Votre choix : " choix
+    case $choix in
+        1)
+            read -p "Nom d'utilisateur à ajouter au groupe d'administration : " user
+            # Vérification si l'utilisateur existe
+            if id "$user" &>/dev/null; then
+                sudo usermod -aG sudo $user
+                echo "Utilisateur $user ajouté au groupe d'administration."
+            else
+                echo "L'utilisateur $user n'existe pas. Veuillez le créer d'abord."
+                Gestion_Utilisateur
+                continue
+            fi
+            sudo usermod -aG sudo $user
+            echo "Utilisateur $user ajouté au groupe d'administration."
+            ;;
+        2)
+            read -p "Nom d'utilisateur à ajouter à un groupe : " user
+            # Vérification si l'utilisateur existe
+            if id "$user" &>/dev/null; then
+                continue
+            else
+                echo "L'utilisateur $user n'existe pas. Veuillez le créer d'abord."
+                Gestion_Utilisateur
+                continue
+            fi
+            
+            read -p "Nom du groupe : " group
+            # Vérification si le groupe existe
+            if getent group $group &>/dev/null; then
+                continue
+            else
+                echo "Le groupe $group n'existe pas. Veuillez le créer d'abord."
+                Gestion_Utilisateur
+                continue
+            fi
+            sudo usermod -aG $group $user
+            echo "Utilisateur $user ajouté au groupe $group."
+            ;;
+        3)
+            read -p "Nom d'utilisateur à sortir du groupe : " user
+            read -p "Nom du groupe : " group
+            sudo gpasswd -d $user $group
+            echo "Utilisateur $user sorti du groupe $group."
+            ;;
+        X|x)
+            Gestion_Utilisateur
+            echo "Vous êtes de retour dans le menu principal."
+            ;;
+        *)
+            echo "Choix invalide, veuillez réessayer."
+            ;;
+    esac
+done
+}
+
+####################### FONCTION PRINCIPALE -- GESTION_SYSTEME ##############################
+
+Gestion_Systeme() {
+# Boucle pour relancer la fonction
+while true ;
+do
+    echo "Bienvenue dans la gestion du système !"
+    echo "Que voulez-vous faire ? :"
+    echo "1. Obtenir une information"
+    echo "2. Effectuer une action"
+    echo "X. Retour"
+    read -p "Votre choix : " choix
+    case $choix in
+        1)
+            information_systeme
+            ;;
+        2)
+            action_systeme
+            ;;
+        X|x)
+            echo "Retour à l'accueil"
+            # Appel du squelette principale
+            Start
+            ;;
+        *)
+            echo "Choix invalide. Veuillez réessayer."
+            return 1
+            ;;
+    esac
+done
+}
+
+####################### FONCTION SECONDAIRE -- GESTION_SYSTEME ##############################
+information_systeme() {
+    echo " Vous êtes à l'intérieur du système !"
+    echo " Que voulez-vous savoir ?"
+    echo "1. Type de CPU, nombre de coeurs, etc."
+    echo "2. Memoire RAM total"
+    echo "3. Utilisation de la mémoire RAM"
+    echo "4. Utilisation du disque"
+    echo "5; Utilisation du processeur"
+    echo "6. Version du système d'exploitation"
+    echo "X. Revenir au menu principal"
+    read -p "Votre choix : " choix
+# Initialisation des variables pour les logs
+fichier_log="info_$(hostname)_$(date +%Y-%m-%d).txt"
+dossier_log="log"
+    case $choix in
+            1)
+                echo  "Type de CPU, nombre de coeurs, etc. :"
+                # Enregistrement des informations dans le fichier "info_<ordinateur>-GEN_<Date>.txt"
+                lscpu | tee -a $dossier_log/$fichier_log
+                echo "Les informations sur le CPU ont été enregistrées dans le fichier $dossier_log/$fichier_log"
+                ;;
+            2)
+                echo "Mémoire RAM totale :"
+                # Enregistrement des informations dans le fichier "info_<ordinateur>-GEN_<Date>.txt"
+                free -h | grep "Mem" | awk '{print $2}' | tee -a $dossier_log/$fichier_log
+                echo "Les informations sur la mémoire RAM totale ont été enregistrées dans le fichier $dossier_log/$fichier_log"
+                ;;
+            3)
+                echo "Utilisation de la mémoire RAM :"
+                # Enregistrement des informations dans le fichier "info_<ordinateur>-GEN_<Date>.txt"
+                free -h | grep "Mem" | awk '{print $3}' | tee -a $dossier_log/$fichier_log
+                echo "Les informations sur l'utilisation de la mémoire RAM ont été enregistrées dans le fichier $dossier_log/$fichier_log"
+                ;;
+            4)
+                echo "Utilisation du disque :"
+                # Enregistrement des informations dans le fichier "info_<ordinateur>-GEN_<Date>.txt"
+                df -h | tee -a $dossier_log/$fichier_log
+                echo "Les informations sur l'utilisation du disque ont été enregistrées dans le fichier $dossier_log/$fichier_log"
+                ;;
+            5)
+                echo "Utilisation du processeur :"
+                # Enregistrement des informations dans le fichier info_<ordinateur>-GEN_<Date>.txt"
+                top -b -n 1 | grep "Cpu(s)" | tee -a $dossier_log/$fichier_log
+                echo "Les informations sur l'utilisation du processeur ont été enregistrées dans le fichier $dossier_log/$fichier_log"
+                ;;
+            6)
+                echo "Version du système d'exploitation :"
+                # Enregistrement des informations dans le fichier "info_<ordinateur>_<Date>.txt"
+                cat /etc/os-release | tee -a $dossier_log/$fichier_log
+                echo "Les informations sur la version du système d'exploitation ont été enregistrées dans le fichier $dossier_log/$fichier_log"
+                ;;
+            X|x)
+                echo "Vous êtes de retour dans le menu principal."
+                ;;
+            *)
+                echo "Choix invalide. Veuillez réessayer."
+                # Appel pour redémarrer la fonction
+                information_systeme
+                ;;
+    esac
+}
+####################### FONCTION SECONDAIRE -- GESTION_SYSTEME ##############################
+action_systeme() {
+    echo " Que souhaitez-vous effectuer ?"
+    echo "1. Arrêter le système"
+    echo "2. Redémarrer le système"
+    echo "3. Vérouiller le système (GNOME-ONLY)"
+    echo "4. Mettre à jour le système"
+    echo "X. Revenir au menu principal"
+    read -p "Votre choix : " choix
+    case $choix in
+            1)
+                echo "Arrêt du système en cours ..."
+                # Arrêt du système
+                sudo shutdown -h now
+                ;;
+            2)
+                echo "Redémarrage du système en cours ..."
+                # Redémarrage du système
+                sudo shutdown -r now
+                ;;
+            3)
+                echo "Vérouillage du système en cours ..."
+                # Vérouillage du système
+                gnome-screensaver-command -l
+                ;;
+            4)
+                echo "Mise à jour du système en cours ..."
+                # Mise à jour du système
+                sudo apt update && sudo apt upgrade -y
+                ;;
+            X|x)
+                echo "Vous êtes de retour dans le menu principal."
+                ;;
+            *)
+                echo "Choix invalide. Veuillez réessayer."
+                # Appel pour redémarrer la fonction
+                action_systeme
+                ;;
+    esac
+    echo "Action effectuée avec succès !"
+}
+
+
+
+
+
+
+
+
+#################### LANCEMENT DU SQUELETTE ##########################
