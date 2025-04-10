@@ -29,13 +29,17 @@ do
                     echo "3) Donner les droits d'exécution à l'utilisateur"
                     echo -e "\nPlusieurs choix possibles, comme 123"
                     read -p "Votre réponse : " droits
-                    case $droits in 
-                        *1*) sudo chmod u+r $dossier ;;
-                        *2*) sudo chmod u+w $dossier ;;
-                        *3*) sudo chmod u+x $dossier ;;
-                        *) echo "Choix invalide, réessayez"
-                        return 1 ;;
-                    esac		 	   
+                    for droit in $(echo "$droits" | grep -o "[1-3]" ); do
+		            case "$droit" in
+		            	1) sudo chmod u+r "$dossier" 
+		            	echo "Droits de lecture ajoutés" ;;
+		           	2) sudo chmod u+w "$dossier" 
+		           	echo "Droits d'écriture ajoutés" ;;
+		            	3) sudo chmod u+x "$dossier" 
+		            	echo "Droits d'exécution ajoutés" ;;
+		            	*) echo "Choix invalide, veuillez réessayer" ;;
+		            esac
+                    done		 	   
                 else
                     echo "Le dossier $dossier n'existe pas. Veuillez le créer d'abord."
                 fi
@@ -55,13 +59,17 @@ do
                     echo "3) Enlever les droits d'exécution à l'utilisateur"
                     echo -e "\nPlusieurs choix possibles, comme 123"
                     read -p "Votre réponse : " droits
-                    case $droits in 
-                        *1*) sudo chmod u-r $dossier ;;
-                        *2*) sudo chmod u-w $dossier ;;
-                        *3*) sudo chmod u-x $dossier ;;
-                        *) echo "Choix invalide, réessayez"
-                        return 1 ;;
-                    esac		 	   
+                    for droit in $(echo "$droits" | grep -o "[1-3]"); do
+		            case "$droit" in
+		            	1) sudo chmod u-r "$dossier" 
+		            	echo "Droits de lecture enlevés" ;;
+		           	2) sudo chmod u-w "$dossier" 
+		           	echo "Droits d'écriture enlevés" ;;
+		            	3) sudo chmod u-x "$dossier"
+		            	echo "Droits d'exécution enlevés" ;;
+		            	*) echo "Choix invalide, veuillez réessayer" ;;
+		            esac
+                    done		 	   
                 else
                     echo "Le dossier $dossier n'existe pas. Veuillez le créer d'abord." 
                 fi
@@ -87,13 +95,17 @@ do
                     echo "3) Donner les droits d'exécution à l'utilisateur"
                     echo -e "\nPlusieurs choix possibles, comme 123"
                     read -p "Votre réponse : " droits
-                    case $droits in 
-                        *1*) sudo chmod u+r $fichier ;;
-                        *2*) sudo chmod u+w $fichier ;;
-                        *3*) sudo chmod u+x $fichier ;;
-                        *) echo "Choix invalide, réessayez"
-                        return 1 ;;
-                    esac		 	   
+                    for droit in $(echo "$droits" | grep -o "[1-3]"); do
+		            case "$droit" in
+		            	1) sudo chmod u+r "$fichier"
+		            	echo "Droits de lecture ajoutés" ;;
+		           	2) sudo chmod u+w "$fichier"
+		           	echo "Droits d'écriture ajoutés" ;;
+		            	3) sudo chmod u+x "$fichier"
+		            	echo "Droits d'exécution ajoutés" ;;
+		            	*) echo "Choix invalide, veuillez réessayer" ;;
+		            esac
+                    done		 	   
                 else
                     echo "Le fichier $fichier n'existe pas. Veuillez le créer d'abord."
                     return 1
@@ -115,13 +127,17 @@ do
                     echo "3) Enlever les droits d'exécution à l'utilisateur"
                     echo -e "\nPlusieurs choix possibles, comme 123"
                     read -p "Votre réponse : " droits
-                    case $droits in 
-                        *1*) sudo chmod u-r $fichier ;;
-                        *2*) sudo chmod u-w $fichier ;;
-                        *3*) sudo chmod u-x $fichier ;;
-                        *) echo "Choix invalide, réessayez"
-                        return 1 ;;
-                    esac		 	   
+                    for droit in $(echo "$droits" | grep -o "[1-3]"); do
+		            case "$droit" in
+		            	1) sudo chmod u+r "$fichier"
+		            	echo "Droits de lecture enlevés" ;;
+		           	2) sudo chmod u+w "$fichier"
+		           	echo "Droits d'écriture enlevés" ;;
+		            	3) sudo chmod u+x "$fichier"
+		            	echo "Droits d'exécution enlevés" ;;
+		            	*) echo "Choix invalide, veuillez réessayer" ;;
+		            esac
+                    done		 	   
                 else
                     echo "Le fichier $fichier n'existe pas. Veuillez le créer d'abord."
                     return 1
@@ -143,7 +159,7 @@ do
             echo "Choix invalide, veuillez réessayer"
             Gestion_Droits
             ;;
-        *) echo "Choix invalide, réessayez"
+        *) echo "Choix invalide, veuillez réessayer"
         return 1 ;;
     esac
 done
