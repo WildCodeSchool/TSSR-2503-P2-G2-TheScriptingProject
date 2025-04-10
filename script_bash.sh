@@ -114,11 +114,46 @@
 
 ###################################################
 
+######################## JOURNALISATION ##############################
+# On veut obtenir les informations sur la machine et l'utilisateur actuel
+# On veut enregistrer les informations dans un dossier "log"
+enregistrement_information() { 
+    # On crée le dossier log s'il n'existe pas déjà
+     dossier_log="log"
+     if [ ! -d "$dossier_log" ]; then
+            mkdir $dossier_log
+    fi
+    # initialisation des variables
+    # On veut récupérer la date 
+    date=$(date +%Y:%m:%d)
+    # On ajuste le nom du fichier pour une information ordinateur sous la forme <NomDuPC>-GEN_<Date>.txt qui sera créé dans le dossier "log"
+        ordi_info_log="info_$(hostname)_GEN_$date.txt"
+    # On ajuste le nom du fichier pour une information utilisateur sous la forme <NomDuPC>_<NomDeLUtilisateur>_<Date>.txt     
+        user_info_log="info_$(hostname)_$(whoami)_$date.txt"
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #####################################
 
 regles()
 {
-echo -e "\n\t MENU REGLES DE PARE-FEU"
+echo -e "\n\t\e [31mMENU REGLES DE PARE-FEU\e[0m"
 echo -e "\n Que voulez vous faire :"
 echo "1) Activer/désactiver les connexions avec une adresse IP spécifique"
 echo "2) Activer/désactiver les connexions via ssh"
@@ -179,8 +214,8 @@ esac
 security()
 {
 while true; do
-echo -e "\n\t MENU GESTION DE LA SECURITE"
-echo -e "\n Que voulez vous faire ? "
+echo -e "\n\t\e [31mMENU GESTION DE LA SECURITE\e[0m"
+echo -e "\n Que voulez vous faire ?"
 echo "1. Activer un pare-feu"
 echo "2. Désactiver un pare-feu"
 echo "3. Définir des règles de pare-feu"
@@ -212,12 +247,12 @@ case $choix in
 	
 	#voir l'état pare-feu
 	4) echo ""
-	sudo ufw status
+	sudo ufw status | tee -a $dossier_log/$ordi_info_log
 	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Voir état du pare-feu" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
 	
 	#Voir les ports ouverts
 	5) echo ""
-	sudo netstat -tlnpu
+	sudo netstat -tlnpu | tee -a $dossier_log/$ordi_info_log
 	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Infos ports ouverts" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
 	
 	6) Gestion_Droits 
@@ -227,20 +262,20 @@ case $choix in
 	7) echo ""
 	read -p "Pour quel utilisateur ? " user
 	#Avoir que la premiere ligne
-	last -F $user | head -n 1 
+	last -F $user | head -n 1 | tee -a $dossier_log/$user_info_log
 	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Infos dernière connexion utilisateur" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
 	
-	#Deriere modif  mdp
+	#Derniere modif  mdp
 	8) echo ""
 	read -p "Pour quel utilisateur ? " user
 	#Avoir que la premiere ligne
-	sudo chage -l $user | head -n 1
+	sudo chage -l $user | head -n 1 | tee -a $dossier_log/$user_info_log
 	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Infos dernier changement mot de passe" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
 	
 	#Liste sessions ouverte
 	9) echo ""
 	read -p "Pour quel utilisateur ? " user
-	w $user
+	w $user | tee -a $dossier_log/$user_info_log
 	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Infos liste des sessions ouvertes pour $user" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
 	
 	r) start  
@@ -264,7 +299,7 @@ done
 reseaux()
 {
 while true; do
-echo -e "\n\t MENU GESTION DU RESEAU"
+echo -e "\n\t\e [31mMENU GESTION DU RESEAU\e[0m"
 echo -e "\nQue voulez vous faire ? "
 echo "1) Voir l'adresse MAC"
 echo "2) Voir les adresses IP des interfaces"
@@ -275,17 +310,17 @@ read -p "Votre réponse : " choix
 case $choix in
 	#Voir l'adresse MAC IL MANQUE SSH
 	1) echo ""
-	ip a | grep "link/ether*" | awk -F " " '{print $2}'  
+	ip a | grep "link/ether*" | awk -F " " '{print $2}' | tee -a $dossier_log/$ordi_info_log  
   	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Infos adresse mac de $HOSTNAME" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
 	
 	#Voir adresse IP des interfaces (pas besoin de SSH)
 	2) echo ""
-	cat /etc/hosts | grep "127*"  
+	cat /etc/hosts | grep "127*" | tee -a $dossier_log/$ordi_info_log  
   	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Infos adresses IP des interfaces connectées avec $HOSTNAME" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
 	
 	#Voir le nombre d'interfaces (donc le nombre de lignes)
 	3) echo ""
-	cat /etc/hosts | grep "127*" | wc -l 
+	cat /etc/hosts | grep "127*" | wc -l | tee -a $dossier_log/$ordi_info_log
   	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Infos nombre d'interfaces connectées à $HOSTNAME" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
 	
 	#retour au menu précédent
@@ -308,7 +343,7 @@ done
 Gestion_Droits() {
 while true ;
 do
-    echo -e "\n\t MENU GESTION DES DROITS"
+    echo -e "\n\t\e[31m MENU GESTION DES DROITS\e[0m"
     echo -e "\n Que voulez-vous modifier ?"
     echo "1. Droits/Permissions de l'utilisateur sur un dossier :"
     echo "2. Droits/Permissions de l'utilisateur sur un fichier :"
@@ -335,7 +370,7 @@ do
                 Gestion_Droits
                 continue
             fi
-            sudo chown $user:$user $dossier
+            sudo chown $user:$user $dossier | tee -a $dossier_log/$user_info_log
             echo "Droits de l'utilisateur $user sur le dossier $dossier modifiés."
             ;;
         2)
@@ -357,7 +392,7 @@ do
                 Gestion_Droits
                 continue
             fi
-            sudo chown $user:$user $fichier
+            sudo chown $user:$user $fichier | tee -a $dossier_log/$user_info_log
             echo "Droits de l'utilisateur $user sur le fichier $fichier modifiés"
             ;;
         R|r)
@@ -393,21 +428,21 @@ execution_script()
 	read -p "Votre réponse : " user
 	echo -e "\nQuel est le nom du script que vous voulez exécuter?"
 	read -p "Votre réponse : " script
-	case $machine in 
- 		1) ip=$172.16.20.30
+case $machine in 
+ 	1) ip=$172.16.20.30
  		ssh $user@$ip $script 
  		echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Execution du script $script sur la machine $ip par l'user $user" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
  		
- 		2) ip=$172.16.20.20
+ 	2) ip=$172.16.20.20
  		ssh $user@$ip $script 
  		echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Execution du script $script sur la machine $ip par l'user $user" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
  		
- 		3) ip=$172.16.20.5
+ 	3) ip=$172.16.20.5
  		ssh $user@$ip $script 
  		echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Execution du script $script sur la machine $ip par l'user $user" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
  		
- 		4) echo "Vous êtes déjà sur cette machine, voulez vous exécuter le scipt? "
- 		echo "o/n"
+ 	4) echo "Vous êtes déjà sur cette machine, voulez vous exécuter le scipt? "
+ 	    echo "o/n"
  		read -p "Votre réponse : " reponse
  		case reponse in
  			o) ./$script 
@@ -419,7 +454,7 @@ execution_script()
  		R|r) repertoire_logiciel 
  		echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Retour au menu repertoire/logiciel" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
 
- 		X|x) echo -e "\n\tAu revoir !"
+ 	X|x) echo -e "\n\tAu revoir !"
  		echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Sortie du script" | sudo tee -a /var/log/log_evt.log > /dev/null
        		exit 0
  		;;
@@ -438,7 +473,7 @@ repertoire_logiciel()
 {
 while true; do
 echo ""
-echo -e "\n\t MENU GESTION REPERTOIRES/LOGICIELS "
+echo -e "\n\t\e [31mMENU GESTION REPERTOIRES/LOGICIELS\e[0m"
 echo -e "\n Que voulez vous faire ? "
 echo "1) Créer un répertoire"
 echo "2) Suppression d'un répertoire"
@@ -518,7 +553,7 @@ case $choix in
 	
 	#recherche de paquet/logiciel
 	5) echo ""
-	apt list --installed | awk -F "/" '{print $1}' 
+	apt list --installed | awk -F "/" '{print $1}' | tee -a $dossier_log/$ordi_info_log 
 	echo ""
 	echo "En cherchez vous en un en particulier? "
 	read -p "o/n : " recherche
@@ -560,7 +595,7 @@ done
 Gestion_Utilisateur() {
 while true ;
 do
-    echo -e "\n\t MENU GESTION DES UTILISATEURS"
+    echo -e "\n\t\e [31mMENU GESTION DES UTILISATEURS\e[0m"
     echo -e "\n Choississez une option :"
     echo "1. Voir la liste des utilisateurs"                    
     echo "2. Création d'un utilisateur"                 
@@ -574,9 +609,9 @@ do
     case $choix in
         1)
             echo "Liste des utilisateurs :" 
-            # Enregistrement des utilisateurs dans le fichier "info_<Utilisateur>-GEN_<Date>.txt"
-            cut -d: -f1 /etc/passwd | tee -a $dossier_log/$fichier_log
-            echo "Les utilisateurs ont été enregistrés dans le fichier $dossier_log/$fichier_log"
+            # Enregistrement des utilisateurs dans le fichier "info_<Utilisateur>-_<Date>.txt"
+            cut -d: -f1 /etc/passwd | tee -a $dossier_log/$ordi_info_log
+            echo "Les utilisateurs ont été enregistrés dans le fichier $dossier_log/$ordi_info_log"
             ;;
         2)
             read -p "Nom d'utilisateur à créer : " user
@@ -619,7 +654,7 @@ done
 Gestion_Groupe() {
 while true ;
 do
-    echo -e "\n\t GESTION DES GROUPES"
+    echo -e "\n\t\e [GESTION DES GROUPES\e[0m"
     echo -e "\n Que voulez-vous faire?"
     echo "1. Ajouter un utilisateur à un groupe d'administration"
     echo "2. Ajouter un utilisateur à un groupe"
@@ -691,7 +726,7 @@ Gestion_Systeme() {
 # Boucle pour relancer la fonction
 while true ;
 do
-    echo -e "\n\t MENU GESTION DU SYSTEME"
+    echo -e "\n\t\e [MENU GESTION DU SYSTEME\e[0m"
     echo -e "\n Que voulez-vous faire ? "
     echo "1. Obtenir une information"
     echo "2. Effectuer une action"
@@ -716,7 +751,7 @@ done
 
 ####################### FONCTION SECONDAIRE -- GESTION_SYSTEME ##############################
 information_systeme() {
-    echo -e "\n\t MENU D'INFORMATIONS DU SYSTEME"
+    echo -e "\n\t\e [31mMENU D'INFORMATIONS DU SYSTEME\e[0m"
     echo -e "\n Que voulez-vous savoir ?"
     echo "1. Type de CPU, nombre de coeurs, etc."
     echo "2. Memoire RAM totale"
@@ -727,45 +762,68 @@ information_systeme() {
     echo "R. Revenir au menu précédent"
     echo "X. Quitter"
     read -p "Votre choix : " choix
-# Initialisation des variables pour les logs
-fichier_log="info_$(hostname)_$(date +%Y-%m-%d).txt"
-dossier_log="log"
     case $choix in
             1)
                 echo  "Type de CPU, nombre de coeurs, etc. :"
                 # Enregistrement des informations dans le fichier "info_<ordinateur>-GEN_<Date>.txt"
-                lscpu | tee -a $dossier_log/$fichier_log
-                echo "Les informations sur le CPU ont été enregistrées dans le fichier $dossier_log/$fichier_log"
+                lscpu | tee -a $dossier_log/$ordi_info_log
+                # On vérifie si le fichier à été crée
+                if [ -f $dossier_log/$ordi_info_log ]; then
+                    echo "Les informations sur le CPU ont été enregistrées dans le fichier $dossier_log/$ordi_info_log"
+                else
+                    echo "Erreur lors de la création du fichier $dossier_log/$ordi_info_log."
+                fi                
                 ;;
             2)
                 echo "Mémoire RAM totale :"
                 # Enregistrement des informations dans le fichier "info_<ordinateur>-GEN_<Date>.txt"
-                free -h | grep "Mem" | awk '{print $2}' | tee -a $dossier_log/$fichier_log
-                echo "Les informations sur la mémoire RAM totale ont été enregistrées dans le fichier $dossier_log/$fichier_log"
+                free -h | grep "Mem" | awk '{print $2}' | tee -a $dossier_log/$ordi_info_log
+                # On vérifie si le fichier à été crée
+                if [ -f $dossier_log/$ordi_info_log ]; then
+                    echo "Les informations sur la mémoire RAM totale ont été enregistrées dans le fichier $dossier_log/$ordi_info_log"
+                else
+                    echo "Erreur lors de la création du fichier $dossier_log/$ordi_info_log."
+                fi
                 ;;
             3)
                 echo "Utilisation de la mémoire RAM :"
                 # Enregistrement des informations dans le fichier "info_<ordinateur>-GEN_<Date>.txt"
-                free -h | grep "Mem" | awk '{print $3}' | tee -a $dossier_log/$fichier_log
-                echo "Les informations sur l'utilisation de la mémoire RAM ont été enregistrées dans le fichier $dossier_log/$fichier_log"
+                free -h | grep "Mem" | awk '{print $3}' | tee -a $dossier_log/$ordi_info_log
+                # On vérifie si le fichier à été crée
+                if [ -f $dossier_log/$ordi_info_log ]; then
+                    echo "Les informations sur l'utilisation de la mémoire RAM ont été enregistrées dans le fichier $dossier_log/$ordi_info_log"
+                else
+                    echo "Erreur lors de la création du fichier $dossier_log/$ordi_info_log."
+                fi
                 ;;
             4)
                 echo "Utilisation du disque :"
                 # Enregistrement des informations dans le fichier "info_<ordinateur>-GEN_<Date>.txt"
-                df -h | tee -a $dossier_log/$fichier_log
-                echo "Les informations sur l'utilisation du disque ont été enregistrées dans le fichier $dossier_log/$fichier_log"
+                df -h | tee -a $dossier_log/$ordi_info_log
+                # On vérifie si le fichier à été crée
+                if [ -f $dossier_log/$ordi_info_log ]; then
+                    echo "Les informations sur l'utilisation du disque ont été enregistrées dans le fichier $dossier_log/$ordi_info_log"
+                else
+                    echo "Erreur lors de la création du fichier $dossier_log/$ordi_info_log."
+                fi
                 ;;
             5)
                 echo "Utilisation du processeur :"
                 # Enregistrement des informations dans le fichier info_<ordinateur>-GEN_<Date>.txt"
-                top -b -n 1 | grep "Cpu(s)" | tee -a $dossier_log/$fichier_log
-                echo "Les informations sur l'utilisation du processeur ont été enregistrées dans le fichier $dossier_log/$fichier_log"
+                top -b -n 1 | grep "Cpu(s)" | tee -a $dossier_log/$ordi_info_log
+                # On vérifie si le fichier à été crée
+                echo "Les informations sur l'utilisation du processeur ont été enregistrées dans le fichier $dossier_log/$ordi_info_log"
                 ;;
             6)
                 echo "Version du système d'exploitation :"
                 # Enregistrement des informations dans le fichier "info_<ordinateur>_<Date>.txt"
-                cat /etc/os-release | tee -a $dossier_log/$fichier_log
-                echo "Les informations sur la version du système d'exploitation ont été enregistrées dans le fichier $dossier_log/$fichier_log"
+                cat /etc/os-release | tee -a $dossier_log/$ordi_info_log
+                # On vérifie si le fichier à été crée
+                if [ -f $dossier_log/$ordi_info_log ]; then
+                    echo "Les informations sur la version du système d'exploitation ont été enregistrées dans le fichier $dossier_log/$ordi_info_log"
+                else
+                    echo "Erreur lors de la création du fichier $dossier_log/$ordi_info_log."
+                fi
                 ;;
             R|r) Gestion_Systeme 
             ;;
@@ -778,7 +836,7 @@ dossier_log="log"
 }
 ####################### FONCTION SECONDAIRE -- GESTION_SYSTEME ##############################
 action_systeme() {
-    echo -e "\n\t MENU D'ACTION SUR LE SYSTEME"
+    echo -e "\n\t\e [31mMENU D'ACTION SUR LE SYSTEME\e[0m"
     echo -e "\n Que souhaitez-vous effectuer ?"
     echo "1. Arrêter le système"
     echo "2. Redémarrer le système"
@@ -824,14 +882,14 @@ action_systeme() {
 
 
 
-#################### LANCEMENT DU SQUELETTE ##########################
+#################### FONCTION MENU PRINCIPAL ##########################
 
 start()
 {
 while true ;
 do
 echo ""
-echo -e "\n\t BIENVENUE DANS LE MENU D'ADMINISTRATION"
+echo -e "\n\t\e [31mBIENVENUE DANS LE MENU D'ADMINISTRATION\e[0m"
 echo -e "\n Que voulez-vous faire ? "
 echo "1. Gérer les utilisateurs"
 echo "2. Gérer la sécurité"
@@ -864,4 +922,6 @@ case $choix in
 esac
 done
 }
+###################### APPEL DU MENU PRINCIPAL #######################
+enregistrement_information
 start
