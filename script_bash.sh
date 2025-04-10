@@ -659,7 +659,8 @@ do
             ;;
         X|x) echo -e "\n\tAu revoir !"
         echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Sortie du script" | sudo tee -a /var/log/log_evt.log > /dev/null
-        exit 0
+        exit 0 ;;
+	
 
         *) echo "Choix invalide, veuillez réessayer."
             ;;
