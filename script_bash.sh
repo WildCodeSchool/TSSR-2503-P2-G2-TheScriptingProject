@@ -161,7 +161,8 @@ case $choix in
 	esac ;;
 	
 	#Réinitialisation par défaut, attention le pare-feu est donc désactivé après ça
-	A|a) sudo ufw reset ;;
+	A|a) sudo ufw reset 
+	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Réinitialisation des règles de pare-feu par défaut" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
 	
 	R|r) security  
 	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Retour vers le menu Security" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
@@ -293,8 +294,8 @@ case $choix in
  	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Retour au premier menu" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
 	
 	X|x) echo -e "\n\tAu revoir !"
-  	   echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Sortie du menu reseaux" | sudo tee -a /var/log/log_evt.log > /dev/null 
-       exit 0 ;;
+  	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Sortie du menu reseaux" | sudo tee -a /var/log/log_evt.log > /dev/null 
+        exit 0 ;;
 	
 	*) echo "Choix invalide, veuillez réessayer" ;;
 esac
@@ -460,6 +461,7 @@ case $choix in
 		#Verification repertoire créée
 		if [ -d $repertoire ]
 			then echo "Répertoire $repertoire bien créée"
+			echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Création du répertoire $repertoire" | sudo tee -a /var/log/log_evt.log > /dev/null 
 			
 			else echo "Erreur, répertoire $repertoire non créée"
 		fi
@@ -476,6 +478,7 @@ case $choix in
 		if [ -d $repertoire ]
 			then echo "Erreur, répertoire $repertoire non supprimé"
 			else echo "Répertoire $repertoire bien supprimé"
+			echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Suppression du répertoire $repertoire" | sudo tee -a /var/log/log_evt.log > /dev/null 
 		fi
 		else echo "Erreur, répertoire $repertoire non supprimé"
 	
@@ -492,15 +495,17 @@ case $choix in
 	if  apt show $logiciel > /dev/null
 		#il existe alors on l'installe
 		then sudo apt install $logiciel
-		echo "$logiciel est installé"
+		echo "$logiciel est installé" 
 		
 		#il existe pas
 		else echo "$logiciel n'est pas disponible au téléchargement"
+		echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Installation du logiciel $logiciel impossible car absent de la liste des paquets" | sudo tee -a /var/log/log_evt.log > /dev/null
 		
 		#pas de vérification qu'il a bien été installé
 		$logiciel > /dev/null
 		if [ $? -eq 0 ]
 			then echo "Le logiciel $logiciel a bien été installé"
+			echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Installation du logiciel $logiciel" | sudo tee -a /var/log/log_evt.log > /dev/null
 			else echo "Erreur, $logiciel n'a pas été installé"
 		fi
 	fi
@@ -512,6 +517,7 @@ case $choix in
 	$logiciel 2>&1 /dev/null
 	if [ $? -eq 0 ]
 		then sudo apt remove $logiciel
+		echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Désinstallation du logiciel $logiciel" | sudo tee -a /var/log/log_evt.log > /dev/null
 		else echo "$logiciel n'a pas été trouvé, il n'a donc pas pu être désinstallé"
 	fi 
 	 ;;
@@ -530,21 +536,26 @@ case $choix in
 		if apt list --installed | awk -F "/" '{print $1}' | grep "$logiciel_recherche"
 			then apt list --installed | awk -F "/" '{print $1}' | grep "$logiciel_recherche"
 			echo "$logiciel_recherche est bien présent sur cette machine"
+			echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Logiciel $logiciel_recherche est bien présent sur la machine" | sudo tee -a /var/log/log_evt.log > /dev/null
 			else echo "$logiciel_recherche n'est pas présent sur cette machine"
+			echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Logiciel $logiciel_recherche non présent sur la machine" | sudo tee -a /var/log/log_evt.log > /dev/null
 		fi
 		;;
 		n) return 0 
-		echo "Retour au menu précédent" ;;
+		echo "Retour au menu précédent"  ;;
 	esac
 	;;
 	
 	6) execution_script
+	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Direction exécution d'un script" | sudo tee -a /var/log/log_evt.log > /dev/null
 	;;
 	
 	#retour au menu précédent
-	R|r) start ;;
+	R|r) start
+	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Retour vers le menu principal" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
 	
 	X|x) echo -e "\n\tAu revoir !"
+    	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Sortie du script" | sudo tee -a /var/log/log_evt.log > /dev/null
     	exit 0 ;;
 	
 	*) echo "Choix invalide, veuillez réessayer" ;;
@@ -577,36 +588,44 @@ do
             # Enregistrement des utilisateurs dans le fichier "info_<Utilisateur>-GEN_<Date>.txt"
             cut -d: -f1 /etc/passwd | tee -a $dossier_log/$fichier_log
             echo "Les utilisateurs ont été enregistrés dans le fichier $dossier_log/$fichier_log"
+            echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Vision de la liste des utilisateurs" | sudo tee -a /var/log/log_evt.log > /dev/null
             ;;
         2)
             read -p "Nom d'utilisateur à créer : " user
             sudo useradd $user
             echo "Utilisateur $user créé."
+            echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Création de l'utilisateur $user" | sudo tee -a /var/log/log_evt.log > /dev/null
             ;;
         3)
             read -p "Nom d'utilisateur à supprimer : " user
             sudo userdel $user
             echo "Utilisateur $user supprimé."
+            echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Suppression de l'user $user" | sudo tee -a /var/log/log_evt.log > /dev/null
             ;;
         4)
             read -p "Nom d'utilisateur pour changer le mot de passe : " user
             sudo passwd $user
             echo "Mot de passe changé pour l'utilisateur $user."
+            echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Modification du mot de passe de $user" | sudo tee -a /var/log/log_evt.log > /dev/null
             ;;
         5)
             read -p "Nom d'utilisateur à désactiver : " user
             sudo usermod -L $user
             echo "Compte utilisateur $user désactivé."
+            echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Désactivation de l'utilisateur $user" | sudo tee -a /var/log/log_evt.log > /dev/null
             ;;
         6)
             Gestion_Groupe
+            echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Direction menu de gestion des groupes" | sudo tee -a /var/log/log_evt.log > /dev/null
             ;;
         R|r)
         	# Appel du menu principal
             start
+            echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Retour au menu principal" | sudo tee -a /var/log/log_evt.log > /dev/null
             ;;
         X|x) echo -e "\n\tAu revoir !"
-            exit 0 ;;
+        echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Sortie du script" | sudo tee -a /var/log/log_evt.log > /dev/null
+        exit 0
 
         *) echo "Choix invalide, veuillez réessayer."
             ;;
@@ -634,13 +653,13 @@ do
             if id "$user" &>/dev/null; then
                 sudo usermod -aG sudo $user
                 echo "Utilisateur $user ajouté au groupe d'administration."
+                echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Ajout de l'utilisateur $user au groupe d'administration" | sudo tee -a /var/log/log_evt.log > /dev/null
             else
                 echo "L'utilisateur $user n'existe pas. Veuillez le créer d'abord."
                 Gestion_Utilisateur
+                echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Retour vers le menu gestion d'utilisateur" | sudo tee -a /var/log/log_evt.log > /dev/null
                 continue
             fi
-            sudo usermod -aG sudo $user
-            echo "Utilisateur $user ajouté au groupe d'administration."
             ;;
         2)
             read -p "Nom d'utilisateur à ajouter à un groupe : " user
@@ -650,34 +669,39 @@ do
             else
                 echo "L'utilisateur $user n'existe pas. Veuillez le créer d'abord."
                 Gestion_Utilisateur
+                echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Retour vers le menu gestion d'utilisateur" | sudo tee -a /var/log/log_evt.log > /dev/null
                 continue
             fi
             
             read -p "Nom du groupe : " group
             # Vérification si le groupe existe
             if getent group $group &>/dev/null; then
+            	sudo usermod -aG $group $user
+           	echo "Utilisateur $user ajouté au groupe $group."
+          	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Ajout de l'utilisateur $user au groupe $group" | sudo tee -a /var/log/log_evt.log > /dev/null
                 continue
             else
                 echo "Le groupe $group n'existe pas. Veuillez le créer d'abord."
                 Gestion_Utilisateur
+                echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Retour vers le menu gestion d'utilisateur" | sudo tee -a /var/log/log_evt.log > /dev/null
                 continue
-            fi
-            sudo usermod -aG $group $user
-            echo "Utilisateur $user ajouté au groupe $group."
+            fi  
             ;;
         3)
             read -p "Nom d'utilisateur à sortir du groupe : " user
             read -p "Nom du groupe : " group
             sudo gpasswd -d $user $group
+            echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Suppression de l'utilisateur $user du groupe $group" | sudo tee -a /var/log/log_evt.log > /dev/null
             echo "Utilisateur $user sorti du groupe $group."
             ;;
         R|r) 
             Gestion_Utilisateur
+            echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Retour vers le menu gestion d'utilisateur" | sudo tee -a /var/log/log_evt.log > /dev/null
             ;;
             
-        X|x)
+        X|x) echo -e "\n\tAu revoir !" 
+            echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Sortie du script" | sudo tee -a /var/log/log_evt.log > /dev/null
             exit 0
-            echo -e "\n\tAu revoir !"
             ;;
         *) echo "Choix invalide, veuillez réessayer."
             ;;
@@ -701,12 +725,16 @@ do
     case $choix in
         1)
             information_systeme
+            echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Direction vers le menu d'information du système" | sudo tee -a /var/log/log_evt.log > /dev/null
             ;;
         2)
             action_systeme
+            echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Direction vers le menu d'action sur le système" | sudo tee -a /var/log/log_evt.log > /dev/null
             ;;
-        R|r) start ;;
+        R|r) start 
+        echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Direction vers le menu principal" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
         X|x) echo -e "\n\tAu revoir !"
+        echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Sortie du script" | sudo tee -a /var/log/log_evt.log > /dev/null
             exit 0
             ;;
         *) echo "Choix invalide. Veuillez réessayer." ;;
@@ -736,41 +764,49 @@ dossier_log="log"
                 # Enregistrement des informations dans le fichier "info_<ordinateur>-GEN_<Date>.txt"
                 lscpu | tee -a $dossier_log/$fichier_log
                 echo "Les informations sur le CPU ont été enregistrées dans le fichier $dossier_log/$fichier_log"
+                echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Vision du type de CPU, nombre de coeurs et autres infos hardware" | sudo tee -a /var/log/log_evt.log > /dev/null
                 ;;
             2)
                 echo "Mémoire RAM totale :"
                 # Enregistrement des informations dans le fichier "info_<ordinateur>-GEN_<Date>.txt"
                 free -h | grep "Mem" | awk '{print $2}' | tee -a $dossier_log/$fichier_log
                 echo "Les informations sur la mémoire RAM totale ont été enregistrées dans le fichier $dossier_log/$fichier_log"
+                echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Vision de la RAM totale" | sudo tee -a /var/log/log_evt.log > /dev/null
                 ;;
             3)
                 echo "Utilisation de la mémoire RAM :"
                 # Enregistrement des informations dans le fichier "info_<ordinateur>-GEN_<Date>.txt"
                 free -h | grep "Mem" | awk '{print $3}' | tee -a $dossier_log/$fichier_log
                 echo "Les informations sur l'utilisation de la mémoire RAM ont été enregistrées dans le fichier $dossier_log/$fichier_log"
+                echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Vision de l'utilisation de le RAM" | sudo tee -a /var/log/log_evt.log > /dev/null
                 ;;
             4)
                 echo "Utilisation du disque :"
                 # Enregistrement des informations dans le fichier "info_<ordinateur>-GEN_<Date>.txt"
                 df -h | tee -a $dossier_log/$fichier_log
                 echo "Les informations sur l'utilisation du disque ont été enregistrées dans le fichier $dossier_log/$fichier_log"
+                echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Vision de l'utilisation du disque" | sudo tee -a /var/log/log_evt.log > /dev/null
                 ;;
             5)
                 echo "Utilisation du processeur :"
                 # Enregistrement des informations dans le fichier info_<ordinateur>-GEN_<Date>.txt"
                 top -b -n 1 | grep "Cpu(s)" | tee -a $dossier_log/$fichier_log
                 echo "Les informations sur l'utilisation du processeur ont été enregistrées dans le fichier $dossier_log/$fichier_log"
+                echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Vision de l'utilisation du processeur" | sudo tee -a /var/log/log_evt.log > /dev/null
                 ;;
             6)
                 echo "Version du système d'exploitation :"
                 # Enregistrement des informations dans le fichier "info_<ordinateur>_<Date>.txt"
                 cat /etc/os-release | tee -a $dossier_log/$fichier_log
                 echo "Les informations sur la version du système d'exploitation ont été enregistrées dans le fichier $dossier_log/$fichier_log"
+                echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Vision du système d'exploitation" | sudo tee -a /var/log/log_evt.log > /dev/null
                 ;;
             R|r) Gestion_Systeme 
+            echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Direction vers le menu de gestion du systeme" | sudo tee -a /var/log/log_evt.log > /dev/null
             ;;
 
             X|x) echo -e "\n\tAu revoir !"
+            echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Sortie du script" | sudo tee -a /var/log/log_evt.log > /dev/null
             exit 0 ;;
             
             *) echo "Choix invalide. Veuillez réessayer." ;;
@@ -791,25 +827,31 @@ action_systeme() {
             1)
                 echo "Arrêt du système en cours ..."
                 # Arrêt du système
+                echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Arrêt du système" | sudo tee -a /var/log/log_evt.log > /dev/null
                 sudo shutdown -h now
                 ;;
             2)
                 echo "Redémarrage du système en cours ..."
                 # Redémarrage du système
+                echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Redémarrage du système" | sudo tee -a /var/log/log_evt.log > /dev/null
                 sudo shutdown -r now
                 ;;
             3)
                 echo "Vérouillage du système en cours ..."
                 # Vérouillage du système
+                echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Verrouillage du système en cours" | sudo tee -a /var/log/log_evt.log > /dev/null
                 gnome-screensaver-command -l
                 ;;
             4)
                 echo "Mise à jour du système en cours ..."
                 # Mise à jour du système
                 sudo apt update && sudo apt upgrade -y
+                echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Mise à jour du systeme" | sudo tee -a /var/log/log_evt.log > /dev/null
                 ;;
-            R|♣r) Gestion_Systeme ;;
+            R|r) Gestion_Systeme 
+            echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Direction vers le menu de gestion du système" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
             X|x) exit 0
+            echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Sortie du script" | sudo tee -a /var/log/log_evt.log > /dev/null
                 echo -e "\n\tAu revoir !"
                 ;;
             *) echo "Choix invalide. Veuillez réessayer." ;;
@@ -842,21 +884,27 @@ echo "X. Quitter"
 read -p "Votre réponse : " choix
 case $choix in
     #direction vers gestion utilisateur = lancement fonction Gestion_Utilisateur
-    1) Gestion_Utilisateur ;;
+    1) Gestion_Utilisateur 
+    echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Direction vers le menu de gestion des utilisateurs" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
 
     #direction vers security = lancement fonction security
-    2) security ;;
+    2) security 
+    echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Direction vers le menu de gestion de la sécurité" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
 
     #direction vers reseaux = lancement fonction reseaux
-    3) reseaux ;;
+    3) reseaux 
+    echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Direction vers le menu de gestion du paramétrage réseau" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
 
     #direction vers repertoire_logiciel = lancement fonction repertoire_logiciel
-    4) repertoire_logiciel ;;
+    4) repertoire_logiciel 
+    echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Direction vers le menu de gestion des logiciels et répertoires" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
 
     #direction vers Gestion_Systeme = lancement fonction Gestion_Systeme
-    5) Gestion_Systeme ;;
+    5) Gestion_Systeme 
+    echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Direction vers le menu de gestion du système" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
 
     X|x) echo -e "\n\tAu revoir !"
+    echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Sortie du script" | sudo tee -a /var/log/log_evt.log > /dev/null
     exit 0
     ;;
 
