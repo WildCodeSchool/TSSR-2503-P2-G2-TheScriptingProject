@@ -947,6 +947,6 @@ esac
 done
 }
 ###################### APPEL DU MENU PRINCIPAL #######################
+echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-********StartScript********" | sudo tee -a /var/log/log_evt.log > /dev/null
 enregistrement_information
 start
-echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-********StartScript********" | sudo tee -a /var/log/log_evt.log > /dev/null
