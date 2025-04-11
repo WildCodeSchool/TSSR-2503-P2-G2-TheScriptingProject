@@ -153,7 +153,7 @@ enregistrement_information() {
 
 regles()
 {
-echo -e "\n\t\e [31mMENU REGLES DE PARE-FEU\e[0m"
+echo -e "\n\t\e[31mMENU REGLES DE PARE-FEU\e[0m"
 echo -e "\n Que voulez vous faire :"
 echo "1) Activer/désactiver les connexions avec une adresse IP spécifique"
 echo "2) Activer/désactiver les connexions via ssh"
@@ -215,7 +215,7 @@ esac
 security()
 {
 while true; do
-echo -e "\n\t\e [31mMENU GESTION DE LA SECURITE\e[0m"
+echo -e "\n\t\e[31mMENU GESTION DE LA SECURITE\e[0m"
 echo -e "\n Que voulez vous faire ?"
 echo "1. Activer un pare-feu"
 echo "2. Désactiver un pare-feu"
@@ -474,7 +474,7 @@ repertoire_logiciel()
 {
 while true; do
 echo ""
-echo -e "\n\t\e [31mMENU GESTION REPERTOIRES/LOGICIELS\e[0m"
+echo -e "\n\t\e[31mMENU GESTION REPERTOIRES/LOGICIELS\e[0m"
 echo -e "\n Que voulez vous faire ? "
 echo "1) Créer un répertoire"
 echo "2) Suppression d'un répertoire"
@@ -606,7 +606,7 @@ done
 Gestion_Utilisateur() {
 while true ;
 do
-    echo -e "\n\t\e [31mMENU GESTION DES UTILISATEURS\e[0m"
+    echo -e "\n\t\e[31mMENU GESTION DES UTILISATEURS\e[0m"
     echo -e "\n Choississez une option :"
     echo "1. Voir la liste des utilisateurs"                    
     echo "2. Création d'un utilisateur"                 
@@ -660,7 +660,6 @@ do
         X|x) echo -e "\n\tAu revoir !"
         echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Sortie du script" | sudo tee -a /var/log/log_evt.log > /dev/null
         exit 0 ;;
-	
 
         *) echo "Choix invalide, veuillez réessayer."
             ;;
@@ -673,7 +672,7 @@ done
 Gestion_Groupe() {
 while true ;
 do
-    echo -e "\n\t\e [GESTION DES GROUPES\e[0m"
+    echo -e "\n\t\e[31mGESTION DES GROUPES\e[0m"
     echo -e "\n Que voulez-vous faire?"
     echo "1. Ajouter un utilisateur à un groupe d'administration"
     echo "2. Ajouter un utilisateur à un groupe"
@@ -750,7 +749,7 @@ Gestion_Systeme() {
 # Boucle pour relancer la fonction
 while true ;
 do
-    echo -e "\n\t\e [MENU GESTION DU SYSTEME\e[0m"
+    echo -e "\n\t\e[31mMENU GESTION DU SYSTEME\e[0m"
     echo -e "\n Que voulez-vous faire ? "
     echo "1. Obtenir une information"
     echo "2. Effectuer une action"
@@ -779,7 +778,7 @@ done
 
 ####################### FONCTION SECONDAIRE -- GESTION_SYSTEME ##############################
 information_systeme() {
-    echo -e "\n\t\e [31mMENU D'INFORMATIONS DU SYSTEME\e[0m"
+    echo -e "\n\t\e[31mMENU D'INFORMATIONS DU SYSTEME\e[0m"
     echo -e "\n Que voulez-vous savoir ?"
     echo "1. Type de CPU, nombre de coeurs, etc."
     echo "2. Memoire RAM totale"
@@ -866,7 +865,7 @@ information_systeme() {
 }
 ####################### FONCTION SECONDAIRE -- GESTION_SYSTEME ##############################
 action_systeme() {
-    echo -e "\n\t\e [31mMENU D'ACTION SUR LE SYSTEME\e[0m"
+    echo -e "\n\t\e[31mMENU D'ACTION SUR LE SYSTEME\e[0m"
     echo -e "\n Que souhaitez-vous effectuer ?"
     echo "1. Arrêter le système"
     echo "2. Redémarrer le système"
@@ -925,7 +924,7 @@ start()
 while true ;
 do
 echo ""
-echo -e "\n\t\e [31mBIENVENUE DANS LE MENU D'ADMINISTRATION\e[0m"
+echo -e "\n\t\e[31mBIENVENUE DANS LE MENU D'ADMINISTRATION\e[0m"
 echo -e "\n Que voulez-vous faire ? "
 echo "1. Gérer les utilisateurs"
 echo "2. Gérer la sécurité"
