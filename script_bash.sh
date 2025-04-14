@@ -18,10 +18,53 @@ enregistrement_information() {
         user_info_log="info_$(hostname)_$(whoami)_$date.txt"
 }
 
+recherche_information()
+{
+while true; do
+echo -e "\n Sur quelle cible recherchez-vous une information?"
+echo -e "(X. Pour quitter)"
+read cible_recherche
+#Porte de sortie en écrivant X ou x
+if [ "$cible_recherche" = "X" ] || [ "$cible_recherche" = "x" ]
+then
+#cible non trouvée donc on retourne au menu principal
+	enregistrement_tout "Retour au menu principal"
+	start
+fi
+#est ce que la cible est paramétrée (donc dans /etc/hosts) pour une machine ou dans /etc/passwd pour un user
+#on met un $ a la fin de la recherche dans /etc/hosts car il y a d'abord l'IP puis le nom (que l'on veut ici) et que' l'on veut que ca se finisse par ce que l'on a écrit dans la variable (ex : pour wilder10 et wilder100 ; ecrire "wilder10" donnera "wilder10" ET wilder"100" donc même si wilder10 n'existe pas, si wilder100 existe alors le résultat sera 0 (reussite). Or, ce n'est pas ce qui est voulu.
+#Même raisonnement avec ^ pour que ce soit en début de chaine, comme dans /etc/passwd c'est écrit sous format user:...:...
+if cat /etc/hosts | grep "$cible_recherche$" > /dev/null || cat /etc/passwd | grep "^$cible_recherche" > /dev/null
+then
+	echo -e "\n Que voulez-vous rechercher?"
+	read recherche
+#on cherche donc un fichier avec comme cible "$cible_recherche" et  qui contient "$recherche"
+	for fichier in $dossier_log/info_$cible_recherche_* 
+	do
+		cat "$fichier" | grep "$recherche"
+	done
+else
+	echo "Cible non trouvée, retour au menu précédent"
+	enregistrement_tout "Retour au menu principal"
+	start
+	
+fi
+
+
+done
+
+}
 
 
 
+enregistrement_tout()
+{
+    #mettre l'evenement en argument 1
+evenement=$1
+#on utilise la commande tee -a pour ajouter au fichier log_evt/log car ce fichier se trouvant dans /var/log, et n'ayant pas l'autorisation de modifier et sauvegarder (écrire) dans ce dossier, on ne peut pas utiliser la redirection via ">>". On utilise donc une commande, avec laquelle on peut faire un sudo et permettre de modifier ce fichier.
+    echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-$evenement" | sudo tee -a /var/log/log_evt.log > /dev/null
 
+}
 
 
 
@@ -50,14 +93,14 @@ case $choix in
 		o) sudo ufw allow from $ip_specifique
 		echo "Traffic entrant depuis l'adresse IP $ip_specifique autorisé" 
 		echo "Il est possible de voir toutes les règles en place dans 'Voir l'état du pare-feu'"
-		echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Activation traffic de $ip_specifique vers $IP" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
+		enregistrement_tout "Activation_traffic_de_$ip_specifique vers $IP";;
 		
 		#inversement, on bloque les connexions avec l'adresse ip renseignée : ip_onoff
 		#Les "vérifications" se font automatiquement : il y a en sortie normale si la regle a été ajoutée ou non
 		n) sudo ufw deny out to $ip_specifique
 		echo "Traffic sortant vers l'adresse IP $ip_specifique bloqué" 
 		echo "Il est possible de voir toutes les règles en place dans 'Voir l'état du pare-feu'"
-		echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Désactivation traffic de $IP vers $ip_specifique" | sudo tee -a /var/log/log_evt.log > /dev/null
+		enregistrement_tout "Désactivation traffic de $IP vers $ip_specifique"
 		;;
 	esac ;;
 	
@@ -66,23 +109,23 @@ case $choix in
 	case $ssh_onoff in
 		o) sudo ufw allow in ssh
 		echo "Connexion via autorisée" 
-		echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Activation connexion SSH" | sudo tee -a /var/log/log_evt.log > /dev/null
+		enregistrement_tout "Activation connexion SSH"
 		;;
 		n) sudo ufw deny in ssh
 		echo "Connexion via bloquée"  
-		echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Désactivation connexion SSH " | sudo tee -a /var/log/log_evt.log > /dev/null
+		enregistrement_tout "Désactivation connexion SSH"
 		;;
 	esac ;;
 	
 	#Réinitialisation par défaut, attention le pare-feu est donc désactivé après ça
 	A|a) sudo ufw reset 
-	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Réinitialisation des règles de pare-feu par défaut" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
+	enregistrement_tout "Réinitialisation des règles de pare-feu par défaut" ;;
 	
-	R|r) echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Retour vers le menu Security" | sudo tee -a /var/log/log_evt.log > /dev/null 
+	R|r) enregistrement_tout "Retour vers le menu Security"
 	security ;;
 	
 	X|x) echo -e "\n\tAu revoir !" 
-	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-*********EndScript*********" | sudo tee -a /var/log/log_evt.log > /dev/null 
+	enregistrement_tout "*********EndScript*********"
   	exit 0 ;;
 	
 	*) echo "Choix invalide, veuillez réessayer" ;;	
@@ -112,58 +155,58 @@ case $choix in
 	#activation parefeu
 	1) echo ""
 	sudo ufw enable
-	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Activation pare-feu" | sudo tee -a /var/log/log_evt.log > /dev/null
+	enregistrement_tout "Activation pare-feu"
 	;;
 	
 	#désactivation parefeu
 	2) echo ""
 	sudo ufw disable 
-	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Désactivation pare-feu" | sudo tee -a /var/log/log_evt.log > /dev/null
+	enregistrement_tout "Désactivation pare-feu"
 	;;
 	
 	#definir les règles de pare-feu -> fonction regles
-	3) echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Direction vers le menu Regles" | sudo tee -a /var/log/log_evt.log > /dev/null 
+	3) enregistrement_tout "Direction vers le menu Regles"
 	regles ;;
 	
 	#voir l'état pare-feu
 	4) echo ""
 	sudo ufw status | tee -a $dossier_log/$ordi_info_log
-	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Voir état du pare-feu" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
+	enregistrement_tout "Voir état du pare-feu" ;;
 	
 	#Voir les ports ouverts
 	5) echo ""
 	sudo netstat -tlnpu | tee -a $dossier_log/$ordi_info_log
-	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Infos ports ouverts" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
+	enregistrement_tout "Infos ports ouverts" ;;
 	
-	6) echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Direction menu gestion des droits d'un utilisateur sur un dossier ou fichier" | sudo tee -a /var/log/log_evt.log > /dev/null 
-	Gestion_Droits ;;
+	6) enregistrement_tout "Direction menu gestion des droits d'un utilisateur sur un dossier ou fichier"
+    Gestion_Droits ;;
 	
 	#Dernière connexion utilisateur
 	7) echo ""
 	read -p "Pour quel utilisateur ? " user
 	#Avoir que la premiere ligne
 	last -F $user | head -n 1 | tee -a $dossier_log/$user_info_log
-	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Infos dernière connexion utilisateur" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
+	enregistrement_tout "Infos dernière connexion utilisateur pour $user" ;;
 	
 	#Derniere modif  mdp
 	8) echo ""
 	read -p "Pour quel utilisateur ? " user
 	#Avoir que la premiere ligne
 	sudo chage -l $user | head -n 1 | tee -a $dossier_log/$user_info_log
-	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Infos dernier changement mot de passe" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
+	enregistrement_tout "Infos dernier changement mot de passe pour $user" ;;
 	
 	#Liste sessions ouverte
 	9) echo ""
 	read -p "Pour quel utilisateur ? " user
 	w $user | tee -a $dossier_log/$user_info_log
-	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Infos liste des sessions ouvertes pour $user" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
+	enregistrement_tout "Infos liste des sessions ouvertes pour $user" ;;
 	
-	r) echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Retour vers le menu Start" | sudo tee -a /var/log/log_evt.log > /dev/null 
+	r) enregistrement_tout "Retour vers le menu Start"
 	start ;;
 	
 	x) echo -e "\n\tAu revoir !" 
-	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-*********EndScript*********" | sudo tee -a /var/log/log_evt.log > /dev/null
-    	exit 0 ;;
+	enregistrement_tout "*********EndScript*********"
+    exit 0 ;;
 	
 	*) echo "Choix invalide, veuillez réessayer" ;;
 esac
@@ -191,24 +234,24 @@ case $choix in
 	#Voir l'adresse MAC IL MANQUE SSH
 	1) echo ""
 	ip a | grep "link/ether*" | awk -F " " '{print $2}' | tee -a $dossier_log/$ordi_info_log  
-  	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Infos adresse mac de $HOSTNAME" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
+	enregistrement_tout "Infos adresse mac de $HOSTNAME" ;;
 	
 	#Voir adresse IP des interfaces (pas besoin de SSH)
 	2) echo ""
 	cat /etc/hosts | grep "127*" | tee -a $dossier_log/$ordi_info_log  
-  	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Infos adresses IP des interfaces connectées avec $HOSTNAME" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
+	enregistrement_tout "Infos adresses IP des interfaces connectées avec $HOSTNAME" ;;
 	
 	#Voir le nombre d'interfaces (donc le nombre de lignes)
 	3) echo ""
 	cat /etc/hosts | grep "127*" | wc -l | tee -a $dossier_log/$ordi_info_log
-  	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Infos nombre d'interfaces connectées à $HOSTNAME" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
+	enregistrement_tout "Infos nombre d'interfaces connectées à $HOSTNAME" ;;
 	
 	#retour au menu précédent
-	R|r) echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Retour au premier menu" | sudo tee -a /var/log/log_evt.log > /dev/null 
+	R|r) enregistrement_tout "Retour au menu principal"
 	start ;;
 	
 	X|x) echo -e "\n\tAu revoir !"
-  	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-*********EndScript*********" | sudo tee -a /var/log/log_evt.log > /dev/null
+  	enregistrement_tout "*********EndScript*********"
         exit 0 ;;
 	
 	*) echo "Choix invalide, veuillez réessayer" ;;
@@ -252,12 +295,12 @@ do
 		            case "$droit" in
 		            	1) sudo chmod u+r "$dossier" 
 		            	echo "Droits de lecture ajoutés" 
-		            	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Ajout droits de lecture de $user sur $dossier" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
-		             	2) sudo chmod u+w "$dossier" 
-		             	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Ajout droits d'écriture de $user sur $dossier" | sudo tee -a /var/log/log_evt.log > /dev/null
-		              	echo "Droits d'écriture ajoutés" ;;
+	                    enregistrement_tout "Ajout droits de lecture de $user sur $dossier" ;;
+		            	2) sudo chmod u+w "$dossier" 
+	                    enregistrement_tout "Ajout droits d'écriture de $user sur $dossier"
+		             	echo "Droits d'écriture ajoutés" ;;
 		            	3) sudo chmod u+x "$dossier"
-		            	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Ajout droits d'execution de $user sur $dossier" | sudo tee -a /var/log/log_evt.log > /dev/null
+	                    enregistrement_tout "Ajout droits d'execution de $user sur $dossier"
 		            	echo "Droits d'exécution ajoutés" ;;
 		            	*) echo "Choix invalide, veuillez réessayer" ;;
 		            esac
@@ -286,13 +329,13 @@ do
 		            case "$droit" in
 		            	1) sudo chmod u-r "$dossier" 
 		            	echo "Droits de lecture enlevés" 
-		            	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Suppression droits de lecture de $user sur $dossier" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
+	                    enregistrement_tout "Suppression droits de lecture de $user sur $dossier" ;;
 		            	2) sudo chmod u-w "$dossier" 
 		             	echo "Droits d'écriture enlevés" 
-		             	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Suppression droits d'écriture de $user sur $dossier" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
-		            	3) sudo chmod u-x "$dossier"
+	                    enregistrement_tout "Suppression droits d'écriture de $user sur $dossier" ;;
+		             	3) sudo chmod u-x "$dossier"
 		            	echo "Droits d'exécution enlevés" 
-		            	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Suppression droits d'execution de $user sur $dossier" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
+	                    enregistrement_tout "Suppression droits d'execution de $user sur $dossier" ;;
 		            	*) echo "Choix invalide, veuillez réessayer" ;;
 		            esac
                     done		 	   
@@ -326,13 +369,13 @@ do
 		            case "$droit" in
 		            	1) sudo chmod u+r "$fichier"
 		            	echo "Droits de lecture ajoutés"
-		            	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Ajout droits de lecture de $user sur $fichier" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
-		              	2) sudo chmod u+w "$fichier"
+	                    enregistrement_tout "Ajout droits de lecture de $user sur $fichier" ;;
+		            	2) sudo chmod u+w "$fichier"
 		              	echo "Droits d'écriture ajoutés" 
-		              	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Ajout droits d'écriture de $user sur $fichier" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
-		            	3) sudo chmod u+x "$fichier"
+                        enregistrement_tout "Ajout droits d'écriture de $user sur $fichier" ;;
+		              	3) sudo chmod u+x "$fichier"
 		            	echo "Droits d'exécution ajoutés" 
-		            	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Ajout droits d'execution de $user sur $fichier" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
+                        enregistrement_tout "Ajout droits d'execution de $user sur $fichier" ;;
 		            	*) echo "Choix invalide, veuillez réessayer" ;;
 		            esac
                     done		 	   
@@ -362,13 +405,13 @@ do
 		            case "$droit" in
 		            	1) sudo chmod u-r "$fichier"
 		            	echo "Droits de lecture enlevés" 
-		            	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Suppression droits de lecture de $user sur $fichier" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
+                        enregistrement_tout "Suppression droits de lecture de $user sur $fichier"  ;;
 		            	2) sudo chmod u-w "$fichier"
 		            	echo "Droits d'écriture enlevés" 
-		            	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Suppression droits d'écriture de $user sur $fichier" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
+                        enregistrement_tout "Suppression droits d'écriture de $user sur $fichier" ;;
 		            	3) sudo chmod u-x "$fichier"
 		            	echo "Droits d'exécution enlevés" 
-		            	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Suppression droits d'execution de $user sur $fichier" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
+                        enregistrement_tout "Suppression droits d'execution de $user sur $fichier" ;;
 		            	*) echo "Choix invalide, veuillez réessayer" ;;
 		            esac
                     done		 	   
@@ -384,12 +427,13 @@ do
             *) echo "Choix invalide, réessayez"
        		return 1 ;;
 	    esac ;;
-        R|r) echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Retour vers le menu gestion de la sécurité" | sudo tee -a /var/log/log_evt.log > /dev/null
+        R|r) evenement="Retour vers le menu gestion de la sécurité"
+        enregistrement_tout $evenement
             security
             ;;
         X|x) echo -e "\n\tAu revoir !"
-		echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-*********EndScript*********" | sudo tee -a /var/log/log_evt.log > /dev/null
-        exit 0 ;;
+        enregistrement_tout "*********EndScript*********"
+		exit 0 ;;
         *) echo "Choix invalide, veuillez réessayer"
         return 1 ;;
     esac
@@ -420,32 +464,33 @@ execution_script()
 case $machine in 
  	1) ip="172.16.20.30"
  		ssh $user@$ip $script 
- 		echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Execution du script $script sur la machine $ip par l'user $user" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
+        enregistrement_tout "Execution du script $script sur la machine $ip par l'user $user" ;;
  		
  	2) ip="172.16.20.20"
  		ssh $user@$ip $script 
- 		echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Execution du script $script sur la machine $ip par l'user $user" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
+        enregistrement_tout "Execution du script $script sur la machine $ip par l'user $user" ;;
  		
  	3) ip="172.16.20.5"
  		ssh $user@$ip $script 
- 		echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Execution du script $script sur la machine $ip par l'user $user" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
+        enregistrement_tout "Execution du script $script sur la machine $ip par l'user $user" ;;
  		
  	4) echo "Vous êtes déjà sur cette machine, voulez vous exécuter le scipt? "
  	    echo "o/n"
  		read -p "Votre réponse : " reponse
  		case reponse in
  			o) ./$script 
- 			echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Execution du script $script sur la machine $ip par l'user $user" | sudo tee -a /var/log/log_evt.log > /dev/null ;;
+            enregistrement_tout "Execution du script $script sur la machine $ip par l'user $user" ;;
  			n) echo "Retour au menu précédent"
- 			echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Retour au menu repertoire/logiciel" | sudo tee -a /var/log/log_evt.log > /dev/null 
- 			repertoire_logiciel 
+            enregistrement_tout "Retour au menu repertoire/logiciel"
+ 			repertoire_logiciel ;;
  		esac ;;
- 		R|r) echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Retour au menu repertoire/logiciel" | sudo tee -a /var/log/log_evt.log > /dev/null 
+ 		R|r) evenement="Retour au menu repertoire/logiciel"
+        enregistrement_tout $evenement
 		repertoire_logiciel ;;
 
  	X|x) echo -e "\n\tAu revoir !"
- 		echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-*********EndScript*********" | sudo tee -a /var/log/log_evt.log > /dev/null
-       	exit 0
+    enregistrement_tout "*********EndScript*********"
+    exit 0
  		;;
 
         *) echo "Choix invalide, veuillez réessayer"
@@ -484,7 +529,7 @@ case $choix in
 		#Verification repertoire créée
 		if [ -d $repertoire ]
 			then echo "Répertoire $repertoire bien créée"
-			echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Création du répertoire $repertoire" | sudo tee -a /var/log/log_evt.log > /dev/null 
+            enregistrement_tout "Création du répertoire $repertoire"
 			
 			else echo "Erreur, répertoire $repertoire non créée"
 		fi
@@ -501,7 +546,7 @@ case $choix in
 		if [ -d $repertoire ]
 			then echo "Erreur, répertoire $repertoire non supprimé"
 			else echo "Répertoire $repertoire bien supprimé"
-			echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Suppression du répertoire $repertoire" | sudo tee -a /var/log/log_evt.log > /dev/null 
+            enregistrement_tout "Suppression du répertoire $repertoire"
 		fi
 		else echo "Erreur, répertoire $repertoire non supprimé"
 	
@@ -522,13 +567,14 @@ case $choix in
 		
 		#il existe pas
 		else echo "$logiciel n'est pas disponible au téléchargement"
-		echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Installation du logiciel $logiciel impossible car absent de la liste des paquets" | sudo tee -a /var/log/log_evt.log > /dev/null
+        enregistrement_tout "Installation du logiciel $logiciel impossible car absent de la liste des paquets"
 		
 		#pas de vérification qu'il a bien été installé
 		$logiciel > /dev/null
 		if [ $? -eq 0 ]
 			then echo "Le logiciel $logiciel a bien été installé"
 			echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Installation du logiciel $logiciel" | sudo tee -a /var/log/log_evt.log > /dev/null
+            enregistrement_tout "Installation du logiciel $logiciel"
 			else echo "Erreur, $logiciel n'a pas été installé"
 		fi
 	fi
@@ -541,6 +587,7 @@ case $choix in
 	if [ $? -eq 0 ]
 		then sudo apt remove $logiciel
 		echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Désinstallation du logiciel $logiciel" | sudo tee -a /var/log/log_evt.log > /dev/null
+        enregistrement_tout "Désinstallation du logiciel $logiciel"
 		else echo "$logiciel n'a pas été trouvé, il n'a donc pas pu être désinstallé"
 	fi 
 	 ;;
@@ -559,9 +606,9 @@ case $choix in
 		if apt list --installed | awk -F "/" '{print $1}' | grep "$logiciel_recherche"
 			then apt list --installed | awk -F "/" '{print $1}' | grep "$logiciel_recherche"
 			echo "$logiciel_recherche est bien présent sur cette machine"
-			echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Logiciel $logiciel_recherche est bien présent sur la machine" | sudo tee -a /var/log/log_evt.log > /dev/null
+            enregistrement_tout "Logiciel $logiciel_recherche est bien présent sur la machine"
 			else echo "$logiciel_recherche n'est pas présent sur cette machine"
-			echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Logiciel $logiciel_recherche non présent sur la machine" | sudo tee -a /var/log/log_evt.log > /dev/null
+            enregistrement_tout "Logiciel $logiciel_recherche non présent sur la machine"
 		fi
 		;;
 		n) echo "Retour au menu précédent" 
@@ -569,16 +616,18 @@ case $choix in
 	esac
 	;;
 	
-	6) echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Direction exécution d'un script" | sudo tee -a /var/log/log_evt.log > /dev/null
+	6) evenement="Direction exécution d'un script"
+    enregistrement_tout $evenement
 	execution_script
 	;;
 	
 	#retour au menu précédent
-	R|r) echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Retour vers le menu principal" | sudo tee -a /var/log/log_evt.log > /dev/null
+	R|r) evenement="Retour vers le menu principal"
+    enregistrement_tout $evenement
 	start ;;
 	
 	X|x) echo -e "\n\tAu revoir !"
-    	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-*********EndScript*********" | sudo tee -a /var/log/log_evt.log > /dev/null
+        enregistrement_tout "*********EndScript*********"
     	exit 0 ;;
 	
 	*) echo "Choix invalide, veuillez réessayer" ;;
@@ -611,41 +660,44 @@ do
             # Enregistrement des utilisateurs dans le fichier "info_<Utilisateur>-_<Date>.txt"
             cut -d: -f1 /etc/passwd | tee -a $dossier_log/$ordi_info_log
             echo "Les utilisateurs ont été enregistrés dans le fichier $dossier_log/$ordi_info_log"
+            enregistrement_tout "Vision de la liste des users"
             ;;
         2)
             read -p "Nom d'utilisateur à créer : " user
             sudo useradd $user
             echo "Utilisateur $user créé."
             echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Création de l'utilisateur $user" | sudo tee -a /var/log/log_evt.log > /dev/null
+            enregistrement_tout "Création de l'utilisateur $user"
             ;;
         3)
             read -p "Nom d'utilisateur à supprimer : " user
             sudo userdel $user
             echo "Utilisateur $user supprimé."
-            echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Suppression de l'user $user" | sudo tee -a /var/log/log_evt.log > /dev/null
+            enregistrement_tout "Suppression de l'utilisateur $user"
             ;;
         4)
             read -p "Nom d'utilisateur pour changer le mot de passe : " user
             sudo passwd $user
             echo "Mot de passe changé pour l'utilisateur $user."
-            echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Modification du mot de passe de $user" | sudo tee -a /var/log/log_evt.log > /dev/null
+            enregistrement_tout "Modification du mot de passe de $user"
             ;;
         5)
             read -p "Nom d'utilisateur à désactiver : " user
             sudo usermod -L $user
             echo "Compte utilisateur $user désactivé."
-            echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Désactivation de l'utilisateur $user" | sudo tee -a /var/log/log_evt.log > /dev/null
+            enregistrement_tout "Désactivation de l'utilisateur $user"
             ;;
-        6) echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Direction menu de gestion des groupes" | sudo tee -a /var/log/log_evt.log > /dev/null
+        6) evenement="Direction menu de gestion des groupes"
+            enregistrement_tout $evenement
             Gestion_Groupe
             ;;
         R|r)
         	# Appel du menu principal
-            echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Retour au menu principal" | sudo tee -a /var/log/log_evt.log > /dev/null
+            enregistrement_tout "Retour vers le menu principal"
             start
             ;;
         X|x) echo -e "\n\tAu revoir !"
-        echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-*********EndScript*********" | sudo tee -a /var/log/log_evt.log > /dev/null
+        enregistrement_tout "*********EndScript*********"
         exit 0 ;;
 
         *) echo "Choix invalide, veuillez réessayer."
@@ -674,10 +726,10 @@ do
             if id "$user" &>/dev/null; then
                 sudo usermod -aG sudo $user
                 echo "Utilisateur $user ajouté au groupe d'administration."
-                echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Ajout de l'utilisateur $user au groupe d'administration" | sudo tee -a /var/log/log_evt.log > /dev/null
+                enregistrement_tout "Ajout de l'utilisateur $user au groupe d'administration"
             else
                 echo "L'utilisateur $user n'existe pas. Veuillez le créer d'abord."
-                echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Retour vers le menu gestion d'utilisateur" | sudo tee -a /var/log/log_evt.log > /dev/null
+                enregistrement_tout "Retour vers le menu gestion d'utilisateur"
                 Gestion_Utilisateur
                 continue
             fi
@@ -689,7 +741,7 @@ do
                 continue
             else
                 echo "L'utilisateur $user n'existe pas. Veuillez le créer d'abord."
-                echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Retour vers le menu gestion d'utilisateur" | sudo tee -a /var/log/log_evt.log > /dev/null
+                enregistrement_tout "Retour vers le menu gestion d'utilisateur"
                 Gestion_Utilisateur
                 continue
             fi
@@ -699,7 +751,7 @@ do
             if getent group $group &>/dev/null; then
             	sudo usermod -aG $group $user
            	echo "Utilisateur $user ajouté au groupe $group."
-          	echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Ajout de l'utilisateur $user au groupe $group" | sudo tee -a /var/log/log_evt.log > /dev/null
+            enregistrement_tout "Ajout de l'utilisateur $user au groupe $group"
                 continue
             else
                 echo "Le groupe $group n'existe pas. Veuillez le créer d'abord."
@@ -710,16 +762,16 @@ do
             read -p "Nom d'utilisateur à sortir du groupe : " user
             read -p "Nom du groupe : " group
             sudo gpasswd -d $user $group
-            echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Suppression de l'utilisateur $user du groupe $group" | sudo tee -a /var/log/log_evt.log > /dev/null
+            enregistrement_tout "Suppression de l'utilisateur $user du groupe $group"
             echo "Utilisateur $user sorti du groupe $group."
             ;;
-        R|r) echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Retour vers le menu gestion d'utilisateur" | sudo tee -a /var/log/log_evt.log > /dev/null
+        R|r) enregistrement_tout "Retour vers le menu gestion d'utilisateur"
 		Gestion_Utilisateur
             ;;
             
         X|x) echo -e "\n\tAu revoir !" 
-            echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-*********EndScript*********" | sudo tee -a /var/log/log_evt.log > /dev/null
-            exit 0
+        enregistrement_tout "*********EndScript*********"
+        exit 0
             ;;
         *) echo "Choix invalide, veuillez réessayer."
             ;;
@@ -741,14 +793,17 @@ do
     echo "X. Quitter"
     read -p "Votre choix : " choix
     case $choix in
-        1) echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Direction vers le menu d'information du système" | sudo tee -a /var/log/log_evt.log > /dev/null
+        1) evenement="Direction vers le menu d'information du système"
+        enregistrement_tout $evenement
 		information_systeme ;;
-        2) echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Direction vers le menu d'action sur le système" | sudo tee -a /var/log/log_evt.log > /dev/null
+        2) evenement="Direction vers le menu d'action du système"
+        enregistrement_tout $evenement
 		action_systeme  ;;
-        R|r) echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Direction vers le menu principal" | sudo tee -a /var/log/log_evt.log > /dev/null 
+        R|r) evenement="Direction vers le menu principal"
+        enregistrement_tout $evenement
 		start ;;
         X|x) echo -e "\n\tAu revoir !"
-        echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-*********EndScript*********" | sudo tee -a /var/log/log_evt.log > /dev/null
+        enregistrement_tout ="*********EndScript*********"
         exit 0 ;;
         *) echo "Choix invalide. Veuillez réessayer." ;;
     esac
@@ -776,7 +831,7 @@ information_systeme() {
                 # On vérifie si le fichier à été crée
                 if [ -f $dossier_log/$ordi_info_log ]; then
                     echo "Les informations sur le CPU ont été enregistrées dans le fichier $dossier_log/$ordi_info_log"
-					echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Vision du type de CPU, nombre de coeurs" | sudo tee -a /var/log/log_evt.log > /dev/null
+                    enregistrement_tout "Vision du type de CPU, nombre de coeurs"
                 else
                     echo "Erreur lors de la création du fichier $dossier_log/$ordi_info_log."
                 fi                
@@ -788,7 +843,7 @@ information_systeme() {
                 # On vérifie si le fichier à été crée
                 if [ -f $dossier_log/$ordi_info_log ]; then
                     echo "Les informations sur la mémoire RAM totale ont été enregistrées dans le fichier $dossier_log/$ordi_info_log"
-					echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Vision de la RAM totale" | sudo tee -a /var/log/log_evt.log > /dev/null
+                    enregistrement_tout "Vision de la RAM totale"
                 else
                     echo "Erreur lors de la création du fichier $dossier_log/$ordi_info_log."
                 fi
@@ -800,7 +855,7 @@ information_systeme() {
                 # On vérifie si le fichier à été crée
                 if [ -f $dossier_log/$ordi_info_log ]; then
                     echo "Les informations sur l'utilisation de la mémoire RAM ont été enregistrées dans le fichier $dossier_log/$ordi_info_log"
-					echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Vision de l'utilisation de la RAM" | sudo tee -a /var/log/log_evt.log > /dev/null
+                    enregistrement_tout "Vision de l'utilisation de la RAM"
                 else
                     echo "Erreur lors de la création du fichier $dossier_log/$ordi_info_log."
                 fi
@@ -812,7 +867,7 @@ information_systeme() {
                 # On vérifie si le fichier à été crée
                 if [ -f $dossier_log/$ordi_info_log ]; then
                     echo "Les informations sur l'utilisation du disque ont été enregistrées dans le fichier $dossier_log/$ordi_info_log"
-					echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Vision de l'utilisation du disque" | sudo tee -a /var/log/log_evt.log > /dev/null
+                    enregistrement_tout "Vision de l'utilisation du disque"
                 else
                     echo "Erreur lors de la création du fichier $dossier_log/$ordi_info_log."
                 fi
@@ -823,7 +878,7 @@ information_systeme() {
                 top -b -n 1 | grep "Cpu(s)" | tee -a $dossier_log/$ordi_info_log
                 # On vérifie si le fichier à été crée
                 echo "Les informations sur l'utilisation du processeur ont été enregistrées dans le fichier $dossier_log/$ordi_info_log"
-				echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Vision de l'utilisation du processeur" | sudo tee -a /var/log/log_evt.log > /dev/null
+                enregistrement_tout "Vision de l'utilisation du processeur"
                 ;;
             6)
                 echo "Version du système d'exploitation :"
@@ -832,16 +887,16 @@ information_systeme() {
                 # On vérifie si le fichier à été crée
                 if [ -f $dossier_log/$ordi_info_log ]; then
                     echo "Les informations sur la version du système d'exploitation ont été enregistrées dans le fichier $dossier_log/$ordi_info_log"
-		    		echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Vision du système d'exploitation" | sudo tee -a /var/log/log_evt.log > /dev/null
+                    enregistrement_tout "Vision du système d'exploitation"
                 else
                     echo "Erreur lors de la création du fichier $dossier_log/$ordi_info_log."
                 fi
                 ;;
-            R|r) echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Direction vers le menu de gestion du systeme" | sudo tee -a /var/log/log_evt.log > /dev/null
+            R|r) enregistrement_tout "Direction vers le menu de gestion du systeme"
 	   		Gestion_Systeme ;;
 
             X|x) echo -e "\n\tAu revoir !"
-            echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-*********EndScript*********" | sudo tee -a /var/log/log_evt.log > /dev/null
+            enregistrement_tout "*********EndScript*********"
             exit 0 ;;
             
             *) echo "Choix invalide. Veuillez réessayer." ;;
@@ -862,30 +917,30 @@ action_systeme() {
             1)
                 echo "Arrêt du système en cours ..."
                 # Arrêt du système
-                echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Arrêt du système" | sudo tee -a /var/log/log_evt.log > /dev/null
+                enregistrement_tout "Arrêt du système"
                 sudo shutdown -h now
                 ;;
             2)
                 echo "Redémarrage du système en cours ..."
                 # Redémarrage du système
-                echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Redémarrage du système" | sudo tee -a /var/log/log_evt.log > /dev/null
+                enregistrement_tout "Redémarrage du système"
                 sudo shutdown -r now
                 ;;
             3)
                 echo "Vérouillage du système en cours ..."
                 # Vérouillage du système
-                echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Verrouillage du système en cours" | sudo tee -a /var/log/log_evt.log > /dev/null
+                enregistrement_tout "Verrouillage du système"
                 gnome-screensaver-command -l
                 ;;
             4)
                 echo "Mise à jour du système en cours ..."
                 # Mise à jour du système
                 sudo apt update && sudo apt upgrade -y
-                echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Mise à jour du systeme" | sudo tee -a /var/log/log_evt.log > /dev/null
+                enregistrement_tout "Mise à jour du systeme"
                 ;;
-            R|r) echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Direction vers le menu de gestion du système" | sudo tee -a /var/log/log_evt.log > /dev/null 
-	    Gestion_Systeme ;;
-            X|x) echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-*********EndScript*********" | sudo tee -a /var/log/log_evt.log > /dev/null
+            R|r) enregistrement_tout "Direction vers le menu de gestion du système"
+	        Gestion_Systeme ;;
+            X|x) enregistrement_tout "*********EndScript*********"
             echo -e "\n\tAu revoir !"
 			exit 0 ;;
             *) echo "Choix invalide. Veuillez réessayer." ;;
@@ -894,8 +949,27 @@ action_systeme() {
 }
 
 
+#####################################################################
 
 
+cible_ssh()
+{
+echo -e "\n Sur quelle machine ou utilisateur voulez-vous vous connecter ?"
+read -p "Entrez une adresse IP ou le nom de la cible : " cible_remote
+
+#est ce que la cible est paramétrée (donc dans /etc/hosts) pour une machine ou dans /etc/passwd pour un user
+#on met un $ a la fin de la recherche dans /etc/hosts car il y a d'abord l'IP puis le nom (que l'on veut ici) et que' l'on veut que ca se finisse par ce que l'on a écrit dans la variable (ex : pour wilder10 et wilder100 ; ecrire "wilder10" donnera "wilder10" ET wilder"100" donc même si wilder10 n'existe pas, si wilder100 existe alors le résultat sera 0 (reussite). Or, ce n'est pas ce qui est voulu.
+#Même raisonnement avec ^ pour que ce soit en début de chaine, comme dans /etc/passwd c'est écrit sous format user:...:...
+if cat /etc/hosts | grep "$cible$"  || cat /etc/passwd | grep "^$cible"
+then
+	enregistrement_tout "Direction menu principal"
+	start
+	
+else
+	echo "Cible non trouvée"
+	exit 0
+fi
+}
 
 
 
@@ -908,37 +982,43 @@ while true ;
 do
 echo ""
 echo -e "\n\t\e[31mBIENVENUE DANS LE MENU D'ADMINISTRATION\e[0m"
+
+
 echo -e "\n Que voulez-vous faire ? "
 echo "1. Gérer les utilisateurs"
 echo "2. Gérer la sécurité"
 echo "3. Gérer le paramétrage réseaux"
 echo "4. Gérer les logiciels et répertoires"
 echo "5. Gérer le système"
+echo "6. Rechercher une information déjà demandée"
 echo "X. Quitter"
 read -p "Votre réponse : " choix
 case $choix in
     #direction vers gestion utilisateur = lancement fonction Gestion_Utilisateur
-    1) echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Direction vers le menu de gestion des utilisateurs" | sudo tee -a /var/log/log_evt.log > /dev/null 
+    1) enregistrement_tout "Direction vers le menu de gestion des utilisateurs"
     Gestion_Utilisateur ;;
 
     #direction vers security = lancement fonction security
-    2) echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Direction vers le menu de gestion de la sécurité" | sudo tee -a /var/log/log_evt.log > /dev/null 
+    2) enregistrement_tout "Direction vers le menu de gestion de la sécurité"
     security ;;
 
     #direction vers reseaux = lancement fonction reseaux
-    3) echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Direction vers le menu de gestion du paramétrage réseau" | sudo tee -a /var/log/log_evt.log > /dev/null 
+    3) enregistrement_tout "Direction vers le menu de gestion du paramétrage réseau"
     reseaux ;;
 
     #direction vers repertoire_logiciel = lancement fonction repertoire_logiciel
-    4) echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Direction vers le menu de gestion des logiciels et répertoires" | sudo tee -a /var/log/log_evt.log > /dev/null 
+    4) enregistrement_tout "Direction vers le menu de gestion des logiciels et répertoires"
     repertoire_logiciel ;;
 
     #direction vers Gestion_Systeme = lancement fonction Gestion_Systeme
-    5) echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Direction vers le menu de gestion du système" | sudo tee -a /var/log/log_evt.log > /dev/null 
+    5) enregistrement_tout "Direction vers le menu de gestion du système"
     Gestion_Systeme ;;
 
+    6) enregistrement_tout "Direction vers la recherche d'information déjà demandée"
+    recherche_information ;;
+
     X|x) echo -e "\n\tAu revoir !"
-    echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-*********EndScript*********" | sudo tee -a /var/log/log_evt.log > /dev/null
+    enregistrement_tout "*********EndScript*********"
     exit 0
     ;;
 
@@ -947,6 +1027,6 @@ esac
 done
 }
 ###################### APPEL DU MENU PRINCIPAL #######################
-echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-********StartScript********" | sudo tee -a /var/log/log_evt.log > /dev/null
+enregistrement_tout "********StartScript********"
 enregistrement_information
-start
+cible_ssh
