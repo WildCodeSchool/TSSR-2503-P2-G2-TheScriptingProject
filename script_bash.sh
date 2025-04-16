@@ -20,40 +20,35 @@ enregistrement_information() {
 
 recherche_information()
 {
-while true; do
-echo -e "\n Sur quelle cible recherchez-vous une information?"
-echo -e "(X. Pour quitter)"
-read cible_recherche
-#Porte de sortie en écrivant X ou x
-if [ "$cible_recherche" = "X" ] || [ "$cible_recherche" = "x" ]
+echo ""
+read -p "Quelle est votre recherche ? " recherche
+#On va faire une recherche des fichiers dans le log pour voir si un ou plusieurs fichiers contiennent $recherche
+#Si c'ets le cas, alors il y aura un message disant qu'une information à ce sujet se trouve dans le fichier <nom du fichier> avec l'information correspondante
+for fichier in $dossier_log/*
+do
+	if cat "$fichier" | grep "$recherche" > /dev/null
+	extrait=$(cat "$fichier" | grep "$recherche")
+	then
+		echo -e "\nIl y a une information à ce sujet dans le fichier $fichier"
+		echo "Voici un extrait : $extrait"
+	fi
+
+done
+if ! [ $? -eq 0 ]
 then
-#cible non trouvée donc on retourne au menu principal
-	enregistrement_tout "Retour au menu principal"
-	start
+	echo "Aucun fichier ne contient votre recherche, essayez une autre recherche"
 fi
+}
+
+
+
+
+
 #est ce que la cible est paramétrée (donc dans /etc/hosts) pour une machine ou dans /etc/passwd pour un user
 #on met un $ a la fin de la recherche dans /etc/hosts car il y a d'abord l'IP puis le nom (que l'on veut ici) et que' l'on veut que ca se finisse par ce que l'on a écrit dans la variable (ex : pour wilder10 et wilder100 ; ecrire "wilder10" donnera "wilder10" ET wilder"100" donc même si wilder10 n'existe pas, si wilder100 existe alors le résultat sera 0 (reussite). Or, ce n'est pas ce qui est voulu.
 #Même raisonnement avec ^ pour que ce soit en début de chaine, comme dans /etc/passwd c'est écrit sous format user:...:...
-if cat /etc/hosts | grep "$cible_recherche$" > /dev/null || cat /etc/passwd | grep "^$cible_recherche" > /dev/null
-then
-	echo -e "\n Que voulez-vous rechercher?"
-	read recherche
-#on cherche donc un fichier avec comme cible "$cible_recherche" et  qui contient "$recherche"
-	for fichier in $dossier_log/info_$cible_recherche_* 
-	do
-		cat "$fichier" | grep "$recherche"
-	done
-else
-	echo "Cible non trouvée, retour au menu précédent"
-	enregistrement_tout "Retour au menu principal"
-	start
-	
-fi
 
 
-done
-
-}
 
 
 
@@ -479,17 +474,17 @@ case $machine in
  		read -p "Votre réponse : " reponse
  		case reponse in
  			o) ./$script 
-            enregistrement_tout "Execution du script $script sur la machine $ip par l'user $user" ;;
+ 			enregistrement_tout "Execution du script $script sur la machine $ip par l'user $user" ;;
  			n) echo "Retour au menu précédent"
-            enregistrement_tout "Retour au menu repertoire/logiciel"
+ 			enregistrement_tout "Retour au menu repertoire/logiciel"
  			repertoire_logiciel ;;
  		esac ;;
  		R|r) evenement="Retour au menu repertoire/logiciel"
-        enregistrement_tout $evenement
+ 		enregistrement_tout $evenement
 		repertoire_logiciel ;;
 
  	X|x) echo -e "\n\tAu revoir !"
-    enregistrement_tout "*********EndScript*********"
+ 	enregistrement_tout "*********EndScript*********"
     exit 0
  		;;
 
@@ -529,7 +524,7 @@ case $choix in
 		#Verification repertoire créée
 		if [ -d $repertoire ]
 			then echo "Répertoire $repertoire bien créée"
-            enregistrement_tout "Création du répertoire $repertoire"
+			enregistrement_tout "Création du répertoire $repertoire"
 			
 			else echo "Erreur, répertoire $repertoire non créée"
 		fi
@@ -546,7 +541,7 @@ case $choix in
 		if [ -d $repertoire ]
 			then echo "Erreur, répertoire $repertoire non supprimé"
 			else echo "Répertoire $repertoire bien supprimé"
-            enregistrement_tout "Suppression du répertoire $repertoire"
+			enregistrement_tout "Suppression du répertoire $repertoire"
 		fi
 		else echo "Erreur, répertoire $repertoire non supprimé"
 	
@@ -567,14 +562,13 @@ case $choix in
 		
 		#il existe pas
 		else echo "$logiciel n'est pas disponible au téléchargement"
-        enregistrement_tout "Installation du logiciel $logiciel impossible car absent de la liste des paquets"
+		enregistrement_tout "Installation du logiciel $logiciel impossible car absent de la liste des paquets"
 		
 		#pas de vérification qu'il a bien été installé
 		$logiciel > /dev/null
 		if [ $? -eq 0 ]
 			then echo "Le logiciel $logiciel a bien été installé"
-			echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Installation du logiciel $logiciel" | sudo tee -a /var/log/log_evt.log > /dev/null
-            enregistrement_tout "Installation du logiciel $logiciel"
+			enregistrement_tout "Installation du logiciel $logiciel"
 			else echo "Erreur, $logiciel n'a pas été installé"
 		fi
 	fi
@@ -586,8 +580,7 @@ case $choix in
 	$logiciel 2>&1 /dev/null
 	if [ $? -eq 0 ]
 		then sudo apt remove $logiciel
-		echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Désinstallation du logiciel $logiciel" | sudo tee -a /var/log/log_evt.log > /dev/null
-        enregistrement_tout "Désinstallation du logiciel $logiciel"
+		enregistrement_tout "Désinstallation du logiciel $logiciel"
 		else echo "$logiciel n'a pas été trouvé, il n'a donc pas pu être désinstallé"
 	fi 
 	 ;;
@@ -606,9 +599,9 @@ case $choix in
 		if apt list --installed | awk -F "/" '{print $1}' | grep "$logiciel_recherche"
 			then apt list --installed | awk -F "/" '{print $1}' | grep "$logiciel_recherche"
 			echo "$logiciel_recherche est bien présent sur cette machine"
-            enregistrement_tout "Logiciel $logiciel_recherche est bien présent sur la machine"
+			enregistrement_tout "Logiciel $logiciel_recherche est bien présent sur la machine"
 			else echo "$logiciel_recherche n'est pas présent sur cette machine"
-            enregistrement_tout "Logiciel $logiciel_recherche non présent sur la machine"
+			enregistrement_tout "Logiciel $logiciel_recherche non présent sur la machine"
 		fi
 		;;
 		n) echo "Retour au menu précédent" 
@@ -616,14 +609,12 @@ case $choix in
 	esac
 	;;
 	
-	6) evenement="Direction exécution d'un script"
-    enregistrement_tout $evenement
+	6) enregistrement_tout "Direction exécution d'un script"
 	execution_script
 	;;
 	
 	#retour au menu précédent
-	R|r) evenement="Retour vers le menu principal"
-    enregistrement_tout $evenement
+	R|r) enregistrement_tout "Retour vers le menu principal"
 	start ;;
 	
 	X|x) echo -e "\n\tAu revoir !"
@@ -666,7 +657,6 @@ do
             read -p "Nom d'utilisateur à créer : " user
             sudo useradd $user
             echo "Utilisateur $user créé."
-            echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-Création de l'utilisateur $user" | sudo tee -a /var/log/log_evt.log > /dev/null
             enregistrement_tout "Création de l'utilisateur $user"
             ;;
         3)
@@ -687,9 +677,8 @@ do
             echo "Compte utilisateur $user désactivé."
             enregistrement_tout "Désactivation de l'utilisateur $user"
             ;;
-        6) evenement="Direction menu de gestion des groupes"
-            enregistrement_tout $evenement
-            Gestion_Groupe
+        6) enregistrement_tout "Direction menu de gestion des groupes"
+           Gestion_Groupe
             ;;
         R|r)
         	# Appel du menu principal
@@ -751,7 +740,7 @@ do
             if getent group $group &>/dev/null; then
             	sudo usermod -aG $group $user
            	echo "Utilisateur $user ajouté au groupe $group."
-            enregistrement_tout "Ajout de l'utilisateur $user au groupe $group"
+           	enregistrement_tout "Ajout de l'utilisateur $user au groupe $group"
                 continue
             else
                 echo "Le groupe $group n'existe pas. Veuillez le créer d'abord."
@@ -951,24 +940,18 @@ action_systeme() {
 
 #####################################################################
 
-
+#fonction pour la connexion ssh
+# A noter qu'on la fait avant le menu principal, donc pour changer de cible, il faudra quitter le script puis le relancer (ou bien on ajoute une fonction pour appeler ce changement de cible)
 cible_ssh()
 {
-echo -e "\n Sur quelle machine ou utilisateur voulez-vous vous connecter ?"
-read -p "Entrez une adresse IP ou le nom de la cible : " cible_remote
+echo -e "\n Sur quelle machine et utilisateur voulez-vous vous connecter ?"
+read -p "Entrez l'adresse IP de la machine distante : " ip_remote
+read -p "Entrez le nom d'utilisateur auquel vous voulez vous connecter sur cette la machine distante : " user_remote
+#on ne fait pas de vérif dans le script étant donné qu'on verra quand même si on s'y ets connecté ou non
 
-#est ce que la cible est paramétrée (donc dans /etc/hosts) pour une machine ou dans /etc/passwd pour un user
-#on met un $ a la fin de la recherche dans /etc/hosts car il y a d'abord l'IP puis le nom (que l'on veut ici) et que' l'on veut que ca se finisse par ce que l'on a écrit dans la variable (ex : pour wilder10 et wilder100 ; ecrire "wilder10" donnera "wilder10" ET wilder"100" donc même si wilder10 n'existe pas, si wilder100 existe alors le résultat sera 0 (reussite). Or, ce n'est pas ce qui est voulu.
-#Même raisonnement avec ^ pour que ce soit en début de chaine, comme dans /etc/passwd c'est écrit sous format user:...:...
-if cat /etc/hosts | grep "$cible$"  || cat /etc/passwd | grep "^$cible"
-then
-	enregistrement_tout "Direction menu principal"
-	start
-	
-else
-	echo "Cible non trouvée"
-	exit 0
-fi
+ssh $user_remote@$ip_remote
+#on va donc ensuite au menu principal
+start
 }
 
 
