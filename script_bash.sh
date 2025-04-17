@@ -18,12 +18,77 @@ enregistrement_information() {
         user_info_log="info_$(hostname)_$(whoami)_$date.txt"
 }
 
+function recherche_tout()
+{
+echo -e "\n Quel type d'information recherchez-vous ?"
+echo "1. Une information déjà demandée qui a été stockée"
+echo "2. Une information sur un évenement, une action, un déplacement"
+echo "R. Retour au menu principal"
+echo "X. Quitter"
+read -p "Votre réponse : " choix
+case $choix in
+    #on va a la fonction recherche_information pour rechercher le log info
+    1) enregistrement_tout "Direction vers la recherche d'information déjà demandée"
+    recherche_information
+    ;;
+    2) enregistrement_tout "Direction vers la recherche sur un évenement, une action, un déplacement"
+    recherche_log
+    ;;
+    r) enregistrement_tout "Retour vers le menu Start"
+	start ;;
+	
+	x) echo -e "\n\tAu revoir !" 
+	enregistrement_tout "*********EndScript*********"
+    exit 0 ;;
+	
+	*) echo "Choix invalide, veuillez réessayer" ;;
+esac
+
+}
+
+
+
+############################
+
+recherche_log()
+{
+echo ""
+echo "Quelle est votre recherche ?"
+echo "Vous pouvez rechercher par le nom d'utilisateur"
+echo "Par la date YYYY/MM/DD"
+echo "Par l'évenement (Vision de..., Déplacement menu ..., Activation SSH ...) "
+read -p "Votre réponse : " recherche
+cat /var/log/log_evt.log | grep "$recherche"
+if ! [ $? -eq 0 ]
+then
+	echo "Aucune donnée de cette recherche n'a été trouvée, essayez une autre recherche"
+fi
+#proposition d'autre recherche
+read -p "Voulez-vous faire une autre recherche? (o/n) " encore
+case $encore in
+    o) enregistrement_tout "Nouvelle sur un évenement, une action, un déplacement"
+    recherche_log ;;
+#pas d'autre recherche, retour au menu principal
+    n) enregistrement_tout "Direction vers le menu principal"
+	start ;;
+    *) echo "Choix invalide, veuillez réessayer" ;;
+esac
+
+}
+
+
+
+######################
+
 recherche_information()
 {
 echo ""
 read -p "Quelle est votre recherche ? " recherche
 #On va faire une recherche des fichiers dans le log pour voir si un ou plusieurs fichiers contiennent $recherche
 #Si c'ets le cas, alors il y aura un message disant qu'une information à ce sujet se trouve dans le fichier <nom du fichier> avec l'information correspondante
+#est ce que la cible est paramétrée (donc dans /etc/hosts) pour une machine ou dans /etc/passwd pour un user
+#on met un $ a la fin de la recherche dans /etc/hosts car il y a d'abord l'IP puis le nom (que l'on veut ici) et que' l'on veut que ca se finisse par ce que l'on a écrit dans la variable (ex : pour wilder10 et wilder100 ; ecrire "wilder10" donnera "wilder10" ET wilder"100" donc même si wilder10 n'existe pas, si wilder100 existe alors le résultat sera 0 (reussite). Or, ce n'est pas ce qui est voulu.
+#Même raisonnement avec ^ pour que ce soit en début de chaine, comme dans /etc/passwd c'est écrit sous format user:...:...
 for fichier in $dossier_log/*
 do
 	if cat "$fichier" | grep "$recherche" > /dev/null
@@ -38,18 +103,20 @@ if ! [ $? -eq 0 ]
 then
 	echo "Aucun fichier ne contient votre recherche, essayez une autre recherche"
 fi
+#proposition d'autre recherche
+read -p "Voulez-vous faire une autre recherche? (o/n) " encore
+case $encore in
+    o) enregistrement_tout "Nouvelle sur un évenement, une action, un déplacement"
+    recherche_information ;;
+#pas d'autre recherche, retour au menu principal
+    n) enregistrement_tout "Direction vers le menu principal"
+	start ;;
+    *) echo "Choix invalide, veuillez réessayer" ;;
+esac
 }
 
 
-
-
-
-#est ce que la cible est paramétrée (donc dans /etc/hosts) pour une machine ou dans /etc/passwd pour un user
-#on met un $ a la fin de la recherche dans /etc/hosts car il y a d'abord l'IP puis le nom (que l'on veut ici) et que' l'on veut que ca se finisse par ce que l'on a écrit dans la variable (ex : pour wilder10 et wilder100 ; ecrire "wilder10" donnera "wilder10" ET wilder"100" donc même si wilder10 n'existe pas, si wilder100 existe alors le résultat sera 0 (reussite). Or, ce n'est pas ce qui est voulu.
-#Même raisonnement avec ^ pour que ce soit en début de chaine, comme dans /etc/passwd c'est écrit sous format user:...:...
-
-
-
+#####################################
 
 
 enregistrement_tout()
@@ -60,8 +127,6 @@ evenement=$1
     echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-$evenement" | sudo tee -a /var/log/log_evt.log > /dev/null
 
 }
-
-
 
 
 
@@ -127,7 +192,7 @@ case $choix in
 esac
 }
 
-
+#####################################
 
 security()
 {
@@ -263,9 +328,11 @@ Gestion_Droits()
 while true ;
 do
     echo -e "\n\t\e[31m MENU GESTION DES DROITS\e[0m"
-    echo -e "\n Que voulez-vous modifier ?"
-    echo "1. Droits/Permissions de l'utilisateur sur un dossier :"
-    echo "2. Droits/Permissions de l'utilisateur sur un fichier :"
+    echo -e "\n Que voulez-vous faire ?"
+    echo "1. Modifier les droits/permissions de l'utilisateur sur un dossier"
+    echo "2. Modifier les droits/permissions de l'utilisateur sur un fichier"
+    echo "3. Voir les droits/permissions sur un dossier"
+    echo "4. Voir les droits/permissions sur un fichier"
     echo "R. Retour au menu précédent"
     echo "X. Quitter"
     read -p "Votre choix : " choix
@@ -422,6 +489,14 @@ do
             *) echo "Choix invalide, réessayez"
        		return 1 ;;
 	    esac ;;
+
+        3) read -p "Nom du dossier (entrez le path absolu) : " dossier
+        ll $dossier | head -n 2 | tail -n 1
+
+        4) read -p "Nom du fichier (entrez le path absolu) : " fichier
+        ll $fichier | head -n 2 | tail -n 1
+
+
         R|r) evenement="Retour vers le menu gestion de la sécurité"
         enregistrement_tout $evenement
             security
@@ -495,7 +570,7 @@ esac
 }
 
 
-
+#####################################
 
 
 repertoire_logiciel()
@@ -627,7 +702,6 @@ done
 
 }
 
-###################################################
 
 ########################## Fonction PRINCIPALE Gestion Utilisateur  ##############################
 
@@ -797,6 +871,7 @@ done
 }
 
 ####################### FONCTION SECONDAIRE -- GESTION_SYSTEME ##############################
+
 information_systeme() {
     echo -e "\n\t\e[31mMENU D'INFORMATIONS DU SYSTEME\e[0m"
     echo -e "\n Que voulez-vous savoir ?"
@@ -888,7 +963,11 @@ information_systeme() {
             *) echo "Choix invalide. Veuillez réessayer." ;;
     esac
 }
+
+
 ####################### FONCTION SECONDAIRE -- GESTION_SYSTEME ##############################
+
+
 action_systeme() {
     echo -e "\n\t\e[31mMENU D'ACTION SUR LE SYSTEME\e[0m"
     echo -e "\n Que souhaitez-vous effectuer ?"
@@ -937,6 +1016,7 @@ action_systeme() {
 
 #####################################################################
 
+
 #fonction pour la connexion ssh
 # A noter qu'on la fait avant le menu principal, donc pour changer de cible, il faudra quitter le script puis le relancer ou bien via la fonction pour appeler ce changement de cible depuis le menu principal
 ssh_cible()
@@ -975,7 +1055,7 @@ echo "2. Gérer la sécurité"
 echo "3. Gérer le paramétrage réseaux"
 echo "4. Gérer les logiciels et répertoires"
 echo "5. Gérer le système"
-echo "6. Rechercher une information déjà demandée"
+echo "6. Rechercher une information déjà demandée/un évenement"
 echo "0. Changer de cible utilisateur et machine"
 echo "X. Quitter"
 read -p "Votre réponse : " choix
@@ -1000,8 +1080,9 @@ case $choix in
     5) enregistrement_tout "Direction vers le menu de gestion du système"
     Gestion_Systeme ;;
 
-    6) enregistrement_tout "Direction vers la recherche d'information déjà demandée"
-    recherche_information ;;
+    6) enregistrement_tout "Direction vers la recherche d'information déjà demandée / recherche dans le log"
+    recherche_tout
+    ;;
 
     0) enregistrement_tout "Changement de cible via ssh"
     ssh_cible ;;
