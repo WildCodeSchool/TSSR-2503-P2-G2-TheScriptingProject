@@ -296,7 +296,7 @@ case $choix in
 	ssh "ip a | grep "link/ether*" | awk -F " " '{print $2}'" | tee -a $dossier_log/$ordi_info_log  
 	enregistrement_tout "Infos adresse mac de $HOSTNAME" ;;
 	
-	#Voir adresse IP des interfaces (pas besoin de SSH)
+	#Voir adresse IP des interfaces
 	2) echo ""
 	ssh "cat /etc/hosts | grep "127*"" | tee -a $dossier_log/$ordi_info_log  
 	enregistrement_tout "Infos adresses IP des interfaces connectées avec $HOSTNAME" ;;
@@ -462,7 +462,7 @@ do
                     echo "3) Enlever les droits d'exécution à l'utilisateur"
                     echo -e "\nPlusieurs choix possibles, comme 123"
                     read -p "Votre réponse : " droits
-                    # Pour chaque réponse donnée, on va faire l'application, permet de faire une reponse 123 pour tout faire d'un coup
+                    # Pour chaque réponse donnée, on va faire l'application, permet de faire une reponse 123 pour tout faire d'un coup grace a la boucle for
                     for droit in $(echo "$droits" | grep -o "[1-3]"); do
 		            case "$droit" in
 		            	1) ssh "sudo chmod u-r "$fichier""
@@ -491,14 +491,15 @@ do
 	    esac ;;
 
         3) read -p "Nom du dossier (entrez le path absolu) : " dossier
-        ll $dossier | head -n 2 | tail -n 1
+        ll $dossier | head -n 2 | tail -n 1 
+        enregistrement_tout "Vision des droits sur le dossier $dossier" ;;
 
         4) read -p "Nom du fichier (entrez le path absolu) : " fichier
         ll $fichier | head -n 2 | tail -n 1
+        enregistrement_tout "Vision des droits sur le fichier $fichier" ;;
 
 
-        R|r) evenement="Retour vers le menu gestion de la sécurité"
-        enregistrement_tout $evenement
+        R|r) enregistrement_tout "Retour vers le menu gestion de la sécurité"
             security
             ;;
         X|x) echo -e "\n\tAu revoir !"
@@ -532,23 +533,33 @@ execution_script()
 	echo -e "\nQuel est le nom du script que vous voulez exécuter?"
 	read -p "Votre réponse : " script
 case $machine in 
+# Execution du script avec ssh et les données qui ont été renseignées
  	1) ip="172.16.20.30"
+    # On donne les droits d'execution a l'utilisateur sur lequel on est, au cas ou c'est pas deja le cas
+        ssh ssh -t $user@$ip "chmod u+x $script"
  		ssh -t $user@$ip "$script "
         enregistrement_tout "Execution du script $script sur la machine $ip par l'user $user" ;;
  		
  	2) ip="172.16.20.20"
+    # On donne les droits d'execution a l'utilisateur sur lequel on est, au cas ou c'est pas deja le cas
+        ssh ssh -t $user@$ip "chmod u+x $script"
  		ssh -t $user@$ip "$script "
         enregistrement_tout "Execution du script $script sur la machine $ip par l'user $user" ;;
  		
  	3) ip="172.16.20.5"
+    # On donne les droits d'execution a l'utilisateur sur lequel on est, au cas ou c'est pas deja le cas
+        ssh ssh -t $user@$ip "chmod u+x $script"
  		ssh -t $user@$ip "$script" 
         enregistrement_tout "Execution du script $script sur la machine $ip par l'user $user" ;;
- 		
- 	4) echo "Vous êtes déjà sur cette machine, voulez vous exécuter le scipt? "
+
+ # on peut aussi exécuter le script sur la machine actuelle, sans ssh du coup
+ 	4) echo "Vous êtes déjà sur cette machine, voulez vous exécuter le script? "
  	    echo "o/n"
  		read -p "Votre réponse : " reponse
  		case reponse in
- 			o) ./$script 
+ 			o) chmod u+x $script
+            # On a donné les droits d'execution a l'utilisateur sur lequel on est, au cas ou c'est pas deja le cas
+            ./$script 
  			enregistrement_tout "Execution du script $script sur la machine $ip par l'user $user" ;;
  			n) echo "Retour au menu précédent"
  			enregistrement_tout "Retour au menu repertoire/logiciel"
@@ -936,7 +947,7 @@ information_systeme() {
             5)
                 echo "Utilisation du processeur :"
                 # Enregistrement des informations dans le fichier info_<ordinateur>-GEN_<Date>.txt"
-                ssh "top -b -n 1 | grep "Cpu(s)"" | tee -a $dossier_log/$ordi_info_log
+                ssh "top -b -n 1 | grep "Cpu"" | tee -a $dossier_log/$ordi_info_log
                 # On vérifie si le fichier à été crée
                 echo "Les informations sur l'utilisation du processeur ont été enregistrées dans le fichier $dossier_log/$ordi_info_log"
                 enregistrement_tout "Vision de l'utilisation du processeur"
@@ -1099,4 +1110,4 @@ done
 ###################### APPEL DU MENU PRINCIPAL #######################
 enregistrement_tout "********StartScript********"
 enregistrement_information
-cible_ssh
+ssh_cible
