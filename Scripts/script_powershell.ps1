@@ -25,6 +25,331 @@ $date = Get-Date -Format "yyyyMMdd-HHmmss"
         user_info_log="info_$env:COMPUTERNAME_$env:USERNAME_$date.txt"
 }
 
+###############################################
+
+##SCRIPT USER
+
+########                                 ########
+###                                           ###  
+###         FONCTION GESTION UTILISATEURS     ###
+###                                           ###
+########                                 ########
+
+########                                     ########
+###                                               ###  
+### FONCTION POUR LE MENU INTERACTIF Utilisateur  ###
+###                                               ###
+########                                     ########
+clear-host
+## Menu interactif 
+function MenuUtilisateur {
+    #Clear-Host
+    Write-Host "==========================" -ForegroundColor Magenta
+    Write-Host "== Bienvenue dans la Gestion des utilisateurs locaux ==" -ForegroundColor Cyan
+    Write-Host "1. Supprimer un utilisateur"
+    write-host "2. Créer un utilisateur"
+    Write-Host "3. Changer le mot de passe d'un utilisateur"
+    write-host "4. Désactiver un utilisateur"
+    Write-Host "5. Gestion des groupes d'utilisateurs"
+    Write-Host "6. Liste des utilisateurs"
+    Write-Host "X. Quitter le programme"
+    Write-Host "==========================" -ForegroundColor Magenta
+}
+
+
+########                                 ########
+###                                           ###  
+###  FONCTION POUR SUPPRIMER UN UTILISATEUR   ###
+###                                           ###
+########                                 ########
+
+function SupprimerUtilisateur {
+    ## On fait une boucle pour la suppression d'utilisateur
+    do {
+        # On demande le nom de l'utilisateur à supprimer
+        $username = Read-Host "Entrez le nom de l'utilisateur que vous voulez supprimer"
+        # On vérifie si l'utilisateur existe
+        if (Get-LocalUser -Name $username -ErrorAction SilentlyContinue) {
+            # On supprime l'utilisateur après vérification de son existence
+            Remove-LocalUser -Name $username
+            # On affiche un message de confirmation de la suppression
+            Write-Host "L'utilisateur $username a été supprimé avec succès." -ForegroundColor Green
+            break
+        } 
+        else {
+            # On affiche un message d'erreur si l'utilisateur n'existe pas
+            Write-Host "ERREUR... L'utilisateur $username n'existe pas. Veuillez réessayer" -ForegroundColor Red
+        }
+    }
+    while ($true)
+}
+
+########                                 ########
+###                                           ###  
+###  FONCTION POUR AJOUTER UN UTILISATEUR     ###
+###                                           ###
+########                                 ########
+
+function AjouterUtilisateur {
+    # On fait une boucle pour la création d'utilisateur tant que l'administrateur ne veut pas quitter
+    do {
+        # On demande le nom de l'utilisateur à créer
+        $username = Read-Host "Entrez le nom de l'utilisateur que vous voulez créer"
+        # On vérifie si l'utilisateur existe déjà
+        if (Get-LocalUser -Name $username -ErrorAction SilentlyContinue) {
+            # On affiche un message d'erreur si l'utilisateur existe déjà
+            Write-Host "ERREUR... L'utilisateur $username existe déjà. Veuillez réessayer" -ForegroundColor Red
+        } 
+        else {
+            # On demande le mot de passe de l'utilisateur à créer
+            $password = Read-Host "Entrez le mot de passe de l'utilisateur" -AsSecureString
+            # On crée l'utilisateur avec le mot de passe fourni
+            New-LocalUser -Name $username -Password $password -UserMayNotChangePassword -PasswordNeverExpires -AccountNeverExpires
+            # On affiche un message de confirmation de la création de l'utilisateur
+            Write-host "L'utilisateur $username a été créé avec succès." -ForegroundColor Green
+            break
+        }
+        
+    } 
+    while ($true)
+}
+
+########                                 ########
+###                                           ###  
+###  FONCTION POUR MODIFIER MDP UTILISATEUR   ###
+###                                           ###
+########                                 ########
+
+function ChangerMdpUtilisateur {
+    # On fait une boucle pour la modification du mot de passe d'utilisateur
+    do {
+        # On demande le nom de l'utilisateur dont on veut changer le mot de passe
+        $username = Read-Host "Entrez le nom de l'utilisateur dont vous voulez changer le mot de passe"
+        # On vérifie si l'utilisateur existe
+        if (Get-LocalUser -Name $username -ErrorAction SilentlyContinue) {
+            # S'il existe nn demande le nouveau mot de passe de l'utilisateur
+            $password = Read-Host "Entrez le nouveau mot de passe de l'utilisateur" -AsSecureString
+            # On change le mot de passe de l'utilisateur avec le mot de passe fourni
+            Set-LocalUser -Name $username -Password $password
+            # On affiche un message de confirmation du changement de mot de passe
+            Write-Host "Le mot de passe de l'utilisateur $username a été changé avec succès." -ForegroundColor Green
+            break
+        } 
+        else {
+            # On affiche un message d'erreur si l'utilisateur n'existe pas
+            Write-Host "ERREUR... L'utilisateur $username n'existe pas. Veuillez réessayer" -ForegroundColor Red
+        }
+    }
+    while ($true)
+}
+
+########                                 ########
+###                                           ###  
+###  FONCTION POUR DESACTIVER UN UTILISATEUR  ###
+###                                           ###
+########                                 ########
+
+function DésactiverUtilisateur {
+    # On fait une boucle pour la désactivation d'utilisateur
+    do {
+        # On demande le nom de l'utilisateur à désactiver
+        $username = Read-Host "Entrez le nom de l'utilisateur que vous voulez désactiver"
+        # On vérifie si l'utilisateur existe
+        if (Get-LocalUser -Name $username -ErrorAction SilentlyContinue) {
+            # On désactive l'utilisateur avec le nom fourni
+            Disable-LocalUser -Name $username
+            # On affiche un message de confirmation de la désactivation de l'utilisateur
+            Write-Host "L'utilisateur $username a été désactivé avec succès." -ForegroundColor Green
+            break
+        } 
+        else {
+            # On affiche un message d'erreur si l'utilisateur n'existe pas
+            Write-Host "ERREUR... L'utilisateur $username n'existe pas. Veuillez réessayer" -ForegroundColor Red
+        }
+    }
+    while ($true)
+}
+
+########                                 ########
+###                                           ###  
+###  FONCTION POUR LISTER LES UTILISATEURS    ###
+###                                           ###
+########                                 ########
+function ListerUtilisateurs {
+    # On affiche la liste des utilisateurs locaux
+    $users = Get-LocalUser
+    foreach ($user in $users)
+    {
+        Write-Host "Nom d'utilisateur : $($user.Name)"
+        Write-Host "Nom complet : $($user.FullName)"
+        Write-Host "Description : $($user.Description)"
+        Write-Host "État du compte : $($user.Enabled)"
+        Write-Host "==========================" -ForegroundColor Magenta
+    } 
+    
+}
+
+########                                 ########
+###                                           ###  
+###  FONCTION DU SOUS MENU GESTION GROUPE     ###
+###                                           ###
+########                                 ########
+
+function MenuGroupe {
+    Clear-Host
+    Write-Host "==========================" -ForegroundColor Magenta
+    Write-Host "== Bienvenue dans la Gestion des groupes d'utilisateurs locaux ==" -ForegroundColor Cyan
+    Write-Host "1. Ajouter à un groupe d'administration"
+    Write-Host "2. Ajouter un utilisateur à un groupe local"
+    write-host "3. Supprimer un utilisateur d'un groupe"
+    Write-Host "R. Revenir au Menu Précédent"
+    Write-Host "==========================" -ForegroundColor Magenta
+}
+
+########                                            ########
+###                                                      ###  
+###  FONCTION POUR AJOUTER UN UTILISATEUR --> GROUPE     ###
+###                                                      ###
+########                                            ########
+
+function AjouterUtilisateurGroupe {
+    # On fait une boucle pour l'ajout d'un utilisateur à un groupe
+    do {
+        # On demande le nom de l'utilisateur à ajouter puis le groupe
+        $username = Read-Host "Entrez le nom de l'utilisateur que vous voulez ajouter au groupe"
+        $groupname = Read-Host "Entrez le nom du groupe auquel vous voulez ajouter l'utilisateur"
+        # On vérifie si l'utilisateur et le groupe existe
+        if ((Get-LocalUser -Name $username -ErrorAction SilentlyContinue) -and (Get-LocalGroup -Name $groupname -ErrorAction SilentlyContinue)) {
+            # Si les deux existes on ajoute l'utilisateur au groupe renseigné
+            Add-LocalGroupMember -Group $groupname -Member $username
+            # On affiche un message de confirmation de l'ajout de l'utilisateur au groupe
+            Write-Host "L'utilisateur $username a été ajouté au groupe $groupname avec succès." -ForegroundColor Green
+            break
+        } 
+        else {
+            # On affiche un message d'erreur si l'utilisateur ou le groupe n'existe pas
+            Write-Host "ERREUR... L'utilisateur $username ou le groupe $groupname n'existe pas. Veuillez réessayer" -ForegroundColor Red
+        }
+    }
+    while ($true)
+}
+########                                              ########
+###                                                        ###  
+###  FONCTION POUR AJOUTER UN UTILISATEUR --> GROUPE AD    ###
+###                                                        ###
+########                                              ########
+
+function AjouterUtilisateurGroupeAD {
+    # On fait une boucle pour l'ajout d'un utilisateur à un groupe AD
+    do {
+        # On demande le nom de l'utilisateur à ajouter puis le groupe AD
+        $username = Read-Host "Entrez le nom de l'utilisateur que vous voulez ajouter au groupe AD"
+        $groupname = Read-Host "Entrez le nom du groupe AD auquel vous voulez ajouter l'utilisateur"
+        # On vérifie si l'utilisateur et le groupe AD existe
+        if ((Get-ADUser -Identity $username -ErrorAction SilentlyContinue) -and (Get-ADGroup -Identity $groupname -ErrorAction SilentlyContinue)) {
+            # Si les deux existes on ajoute l'utilisateur au groupe renseigné
+            Add-ADGroupMember -Identity $groupname -Members $username
+            # On affiche un message de confirmation de l'ajout de l'utilisateur au groupe AD
+            Write-Host "L'utilisateur $username a été ajouté au groupe AD $groupname avec succès." -ForegroundColor Green
+            break
+        } 
+        else {
+            # On affiche un message d'erreur si l'utilisateur ou le groupe AD n'existe pas
+            Write-Host "ERREUR... L'utilisateur $username ou le groupe AD $groupname n'existe pas. Veuillez réessayer" -ForegroundColor Red
+        }
+    }
+    while ($true)
+}
+
+########                                              ########
+###                                                        ###  
+###  FONCTION POUR SUPPRIMER UN UTILISATEUR D'UN GROUPE    ###
+###                                                        ###
+########                                              ########
+
+function SupprimerUtilisateurGroupe {
+    # On fait une boucle pour la suppression d'un utilisateur d'un groupe
+    do {
+        # On demande le nom de l'utilisateur à supprimer puis le groupe
+        $username = Read-Host "Entrez le nom de l'utilisateur que vous voulez supprimer du groupe"
+        $groupname = Read-Host "Entrez le nom du groupe dont vous voulez supprimer l'utilisateur"
+        # On vérifie si l'utilisateur et le groupe existe
+        if ((Get-LocalUser -Name $username -ErrorAction SilentlyContinue) -and (Get-LocalGroup -Name $groupname -ErrorAction SilentlyContinue)) {
+            # Si les deux existes on supprime l'utilisateur du groupe renseigné
+            Remove-LocalGroupMember -Group $groupname -Member $username
+            # On affiche un message de confirmation de la suppression de l'utilisateur du groupe
+            Write-Host "L'utilisateur $username a été supprimé du groupe $groupname avec succès." -ForegroundColor Green
+            break
+        } 
+        else {
+            # On affiche un message d'erreur si l'utilisateur ou le groupe n'existe pas
+            Write-Host "ERREUR... L'utilisateur $username ou le groupe $groupname n'existe pas. Veuillez réessayer" -ForegroundColor Red
+        }
+    }
+    while ($true)
+}
+
+########                                      ########
+###                                                ###  
+###  FONCTION POUR APPELER LA GESTION DES GROUPES  ###
+###                                                ###
+########                                      ########
+
+function GestionGroupe {
+    # On fait une boucle pour la gestion des groupes
+        
+    do {
+        # On appelle la fonction MenuGroupe pour afficher le menu
+        MenuGroupe
+        # On demande à l'administrateur de faire un choix
+        $choix = Read-Host "Veuillez choisir une option"
+        # On vérifie le choix de l'administrateur et on appelle la fonction correspondante
+        switch ($choix) {
+            "1" { AjouterUtilisateurGroupe }
+            "2" { AjouterUtilisateurGroupeAD }
+            "3" { SupprimerUtilisateurGroupe }
+            "R" { 
+                    Write-Host "Retour au menu principal..." -ForegroundColor Green
+                    return
+                }
+            default { Write-Host "Choix invalide. Veuillez réessayer." -ForegroundColor Red }
+        }
+    }
+    while ($true)
+}
+
+
+########                                 ########
+###                                           ###  
+###        APPELER LE MENU UTILISATEUR        ###
+###                                           ###
+########                                 ########
+
+# On appelle la fonction qui affiche le Menu Utilisateur en cas de choix "Gestion Utilisateur" dans le Menu Principal
+# On fait une boucle pour le menu utilisateur tant que l'administrateur ne veut pas quitter
+do {
+    # On appelle la fonction MenuUtilisateur pour afficher le menu
+    MenuUtilisateur
+    # On demande à l'administrateur de faire un choix
+    $choix = Read-Host "Entrez votre choix"
+    # On vérifie le choix de l'administrateur et on appelle la fonction correspondante
+    switch ($choix) {
+        "1" { SupprimerUtilisateur }
+        "2" { AjouterUtilisateur }
+        "3" { ChangerMdpUtilisateur }
+        "4" { DésactiverUtilisateur }
+        "5" { GestionGroupe }
+        "6" { ListerUtilisateurs }
+        "X" {
+                Write-Host "Merci d'avoir utilisé le script de gestion des utilisateurs. Au revoir !" -ForegroundColor Green
+                exit
+            }
+        default { Write-Host " ERREUR... Veuillez choisir 1-6 ou "X" pour quitter. " -ForegroundColor Red }
+    }
+} while ($true)
+
+###########################
+
 #####################################
 
 function recherche_log {
@@ -59,23 +384,23 @@ enregistrement_tout "Direction vers le menu principal"
 start
 }
 default {
-Write-Host "Choix invalide. Veuillez réessayer."
+Write-Host "Choix invalide. Veuillez réessayer." -ForegroundColor Red
 }
 }
 }
-
 
 ########################
 function Gestion_Droits {
 Clear-Host
 while ($true) {
-Write-Host ""
-Write-Host "MENU GESTION DES DROITS"
-Write-Host "Que voulez-vous voir ?"
+Write-Host "==========================" -ForegroundColor Magenta
+Write-Host "`n`t`tMENU GESTION DES DROITS" -ForegroundColor Red
+Write-Host "`n Que voulez-vous voir ?"
 Write-Host "1. Droits/Permissions de l'utilisateur sur un dossier :"
 Write-Host "2. Droits/Permissions de l'utilisateur sur un fichier :"
 Write-Host "R. Retour au menu précédent"
 Write-Host "X. Quitter"
+Write-Host "==========================" -ForegroundColor Magenta
 $choix = Read-Host "Votre réponse "
 
 switch ($choix) {
@@ -86,7 +411,7 @@ switch ($choix) {
         Get-Acl -Path $dossier
         enregistrement_tout "Vérification des droits et permissions du dossier $dossier"
     } else {
-        Write-Host "Le dossier n'existe pas."
+        Write-Host "Le dossier n'existe pas." -ForegroundColor Red
     }
 
 }
@@ -96,11 +421,11 @@ switch ($choix) {
         Get-Acl -Path $fichier
         enregistrement_tout "Vérifications des droits et permissions du fichier $fichier"
     } else {
-        Write-Host "Le fichier n'existe pas."
+        Write-Host "Le fichier n'existe pas." -ForegroundColor Red
     }
 }
 default {
-    Write-Host "Choix invalide. Veuillez réessayer."
+    Write-Host "Choix invalide. Veuillez réessayer." -ForegroundColor Red
 }
 }
 }
@@ -112,9 +437,9 @@ default {
 function repertoire_logiciel {
 Clear-Host
 while ($true) {
-Write-Host ""
-Write-host "MENU GESTION REPERTOIRES/LOGICIELS"
-Write-host "Que voulez vous faire ? "
+Write-Host "==========================" -ForegroundColor Magenta
+Write-host "`n`t`tMENU GESTION REPERTOIRES/LOGICIELS" -ForegroundColor Red
+Write-host "`n Que voulez vous faire ? "
 Write-host "1) Créer un répertoire"
 Write-host "2) Suppression d'un répertoire"
 Write-host "3) Installer un logiciel"
@@ -123,6 +448,7 @@ Write-host "5) Voir la liste des applications et paquets installés"
 Write-host "6) Executer de script sur machine distante"
 Write-host "R) Menu Principal"
 Write-host "X) Quitter"
+Write-Host "==========================" -ForegroundColor Magenta
 $choix = Read-Host "Votre réponse "
 
 switch ($choix) {
@@ -181,12 +507,12 @@ r { enregistrement_tout "Direction vers le menu principal"
 }
 x {
     Write-Host ""
-    Write-Host "Au revoir !"
+    Write-Host "Au revoir !" -ForegroundColor Red
     enregistrement_tout "*********EndScript*********"
     exit 0
 }
 default {
-Write-Host "Choix invalide. Veuillez réessayer."
+Write-Host "Choix invalide. Veuillez réessayer." -ForegroundColor Red
 }
 }
 }
@@ -198,12 +524,14 @@ Write-Host "Choix invalide. Veuillez réessayer."
 function regles{
 Clear-Host
 while ($true) {
-
-Write-host "Que voulez vous faire ?"
+Write-Host "==========================" -ForegroundColor Magenta
+Write-Host "`n`t`tMENU REGLE DE PARE-FEU" -ForegroundColor Red
+Write-host "`n Que voulez vous faire ?"
 Write-host "1) Activer/désactiver les connexions avec une adresse IP spécifique"
 Write-host "2) Activer/désactiver les connexions via ssh"
 Write-host "R) Retour au menu précédent"
 Write-host "X) Quitter"
+Write-Host "==========================" -ForegroundColor Magenta
 $choix = Read-Host "Votre réponse "
 
 switch ($choix) {
@@ -257,13 +585,13 @@ Write-Host ""
         enregistrement_tout "Blocage des connexions SSH avec l'adresse IP $ip_specifique"
         }
         default {
-        Write-Host "Choix invalide. Veuillez réessayer."
+        Write-Host "Choix invalide. Veuillez réessayer." -ForegroundColor Red
         }
     }
 Write-Host ""
 }
 default {
-Write-Host "Choix invalide. Veuillez réessayer."
+Write-Host "Choix invalide. Veuillez réessayer." -ForegroundColor Red
 }
 }
 }
@@ -274,13 +602,15 @@ Write-Host "Choix invalide. Veuillez réessayer."
 function reseaux{
 Clear-Host
 while ($true) {
-
-Write-host "Que voulez vous faire ?"
+Write-Host "==========================" -ForegroundColor Magenta
+Write-host "`n`t`tMENU GESTION DU RESEAU" -ForegroundColor Red
+Write-host "`n Que voulez vous faire ?"
 Write-host "1) Voir l'adresse MAC"
 Write-host "2) Voir les adresses IP des interfaces"
 Write-host "3) Voir le nombre d'interfaces"
 Write-host "R) Retour au menu précédent"
 Write-host "X) Quitter"
+Write-Host "==========================" -ForegroundColor Magenta
 $choix = Read-Host "Votre réponse "
 
 switch ($choix) {
@@ -327,7 +657,7 @@ Write-Host "Choix invalide. Veuillez réessayer."
     enregistrement_tout "Vision du nombre d'interfaces connectées"
 }
 default {
-Write-Host "Choix invalide. Veuillez réessayer."
+Write-Host "Choix invalide. Veuillez réessayer." -ForegroundColor Red
 }
 }
 }
@@ -339,9 +669,9 @@ Write-Host "Choix invalide. Veuillez réessayer."
 function Security {
 Clear-Host
 while ($true) {
-Write-host ""
-Write-host "MENU GESTION DE LA SECURITE"
-Write-host "Que voulez vous faire ?"
+Write-Host "==========================" -ForegroundColor Magenta
+Write-host "`n`t`tMENU GESTION DE LA SECURITE" -ForegroundColor Red
+Write-host "`nQue voulez vous faire ?"
 Write-host "1. Activer un pare-feu"
 Write-host "2. Désactiver un pare-feu"
 Write-host "3. Définir des règles de pare-feu"
@@ -353,6 +683,7 @@ Write-host "8. Voir la date de dernier changement de mot de passe"
 Write-host "9. Voir la liste des sessions ouvertes"
 Write-host "R. Retour au menu précédent"
 Write-host "X. Quitter"
+Write-Host "==========================" -ForegroundColor Magenta
 $choix = Read-Host "Votre réponse "
 
 switch ($choix) {
@@ -412,7 +743,7 @@ enregistrement_tout "Directon vers le menu de gestion des droits et permissions"
     enregistrement_tout "Vision de la liste des sessiosn ouvertes"
 }
 default {
-Write-Host "Choix invalide. Veuillez réessayer."
+Write-Host "Choix invalide. Veuillez réessayer." -ForegroundColor Red
 }
 }
 }
@@ -428,9 +759,9 @@ function start
 Clear-Host
 while ($true) {
 Write-Host ""
-
-Write-Host "BIENVENUE DANS LE MENU D'ADMINISTRATION"
-Write-Host "Que voulez-vous faire ? "
+Write-Host "==========================" -ForegroundColor Magenta
+Write-Host "`n`t`tBIENVENUE DANS LE MENU D'ADMINISTRATION" -ForegroundColor Red
+Write-Host "`n Que voulez-vous faire ? "
 Write-Host "1. Gérer les utilisateurs"
 Write-Host "2. Gérer la sécurité"
 Write-Host "3. Gérer le paramétrage réseaux"
@@ -439,6 +770,7 @@ Write-Host "5. Gérer le système"
 Write-Host "6. Rechercher une information déjà demandée/un évenement"
 Write-Host "0. Changer de cible utilisateur et machine"
 Write-Host "X. Quitter"
+Write-Host "==========================" -ForegroundColor Magenta
 $choix = Read-Host "Votre réponse "
 switch ($choix) {
 1 {
@@ -480,13 +812,13 @@ ssh_cible
 }
 
 x {
-Write-Host "Au revoir !"
+Write-Host "Au revoir !" -ForegroundColor Red
 enregistrement_tout "*********EndScript*********"
 exit 0
 }
 
 default {
-Write-Host "Choix invalide. Veuillez réessayer."
+Write-Host "Choix invalide. Veuillez réessayer." -ForegroundColor Red
 }
 
 }
