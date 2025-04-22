@@ -48,14 +48,19 @@ Nous allons configurer les machines pour atteindre cette configuration finale :
 D'abord, paramétrons le client. Ici, nous utilisons la version Ubuntu 24.04.2 LTS. Vous pouvez le vérifier avec la commande
 ``` lsb_release -a ```
 
-Nous allons dans les Paramètres; dans la rubrique Réseau; puis dans les options du réseau qui nous intéresse : Ethernet enp0s8. Il est possible d'y voir vos cartes réseau avec la commande 
-``` ip -a ```
+Nous allons dans les Paramètres; dans la rubrique Réseau; puis dans les options du réseau qui nous intéresse : ens18 en filaire. Il est possible de voir vos cartes réseau avec la commande 
+``` ip l ```
 
 Dans la rubrique IPv4, nous allons insérer une adresse IP et un masque. Dans notre cas, nous choisirons 172.16.20.30 et 255.255.255.0.  
 Ajoutons ensuite la passerelle 172.16.20.254 et le DNS en 8.8.8.8.  
 Ce qui devrait donner ceci :  
 ![IP_CLILIN01](Ressources/configuration_CLILIN01.png)  
  
+   ##### 1.2.b CLIWIN01  
+   <span id="Client-Windows"></span>
+   Nous allons dans les Paramètres, dans la rubrique Réseau et Internet, puis dans les Propriétés de Ethernet, nous allons modifier les Paramètres IP. Voici le résultat : 
+   
+![IP_CLIWIN01](Ressources/screen_IP_CLIWIN01.png) 
 
    ##### 1.2.c SRVWIN01  
 <span id="Windows-Serveur-2022"></span>
@@ -86,15 +91,21 @@ Maintenant, établissons la connexion entre les machines. Pour cela, nous allons
 
 ![reseau_CLILIN01](Ressources/screen_reseau_CLILIN01.png) 
 
-   ##### 1.3.b Serveur Debian  
+   ##### 1.3.b CLIWIN01  
+   <span id="Client-Windows_reseau"></span>
+Dans l'explorateur de fichiers, nous allons suivre le chemin suivant : C:\Windows\System32\drivers\etc pour ouvrir le fichier hosts. Ajoutons-y les adresses IP des autres machines :
+   
+![reseau_CLIWIN01](Ressources/screen_reseau_CLIWIN01.png) 
+
+   ##### 1.3.c Serveur Debian  
 <span id="Serveur-Debian_reseau"></span>
 Nous allons procéder à la même chose sur le serveur Debian. Pour cela, même commande (le sudo n'est pas nécessaire si vous êtes sur le compte root) ```nano /etc/hosts```  
 Vous pouvez maintenant ajouter les adresses IP des machines de votre futur réseau. 
 
 ![reseau_debian](Ressources/screen_reseau_SRVLX01.png)  
-   ##### 1.3.c Windows Serveur 2022  
+   ##### 1.3.d Windows Serveur 2022  
 <span id="Windows-Serveur-2022_reseau"></span>
-Nous allons maintenant le faire sur le serveur Windows. Dans l'explorateur de fichiers, nous allons suivre le chemin suivant : C:\Windows\System32\drivers\etc pour ouvrir le fichier hosts. Ajoutons-y les adresses IP des autres machines :
+Nous allons maintenant le faire sur le serveur Windows. Comme pour la machine cliente, dans l'explorateur de fichiers, nous allons suivre le chemin suivant : C:\Windows\System32\drivers\etc pour ouvrir le fichier hosts. Ajoutons-y les adresses IP des autres machines :
 
 ![reseau_windows](Ressources/screen_reseau_SRVWIN01.png) 
 
