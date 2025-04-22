@@ -58,6 +58,9 @@ n {
 enregistrement_tout "Direction vers le menu principal"
 start
 }
+default {
+Write-Host "Choix invalide. Veuillez réessayer."
+}
 }
 }
 
@@ -182,6 +185,9 @@ x {
     enregistrement_tout "*********EndScript*********"
     exit 0
 }
+default {
+Write-Host "Choix invalide. Veuillez réessayer."
+}
 }
 }
 }
@@ -224,7 +230,10 @@ switch ($choix) {
          New-NetFirewallRule -DisplayName "BloquerSortieVers:$ip_specifique" -Direction Outbound -Action Block -RemoteAddress "$ip_specifique" -Enabled True > $null
          Write-Host "Connexions avec l'adresse IP $ip_specifique bloquées"
          enregistrement_tout "Blocage des connexions avec l'adresse IP $ip_specifique"
-     }
+         }
+         default {
+        Write-Host "Choix invalide. Veuillez réessayer."
+        }
 
 }
 Write-Host ""
@@ -246,9 +255,15 @@ Write-Host ""
         New-NetFirewallRule -DisplayName "BloquerSSHSortantVers:$ip_specifique" -Direction Outbound -Action Block -Protocol TCP -RemotePort $ssh_port -RemoteAddress "$ip_specifique" -Enabled True > $null
         Write-Host "Connexions SSH l'adresse IP $ip_specifique bloquées"
         enregistrement_tout "Blocage des connexions SSH avec l'adresse IP $ip_specifique"
-    }
+        }
+        default {
+        Write-Host "Choix invalide. Veuillez réessayer."
+        }
     }
 Write-Host ""
+}
+default {
+Write-Host "Choix invalide. Veuillez réessayer."
 }
 }
 }
@@ -285,6 +300,7 @@ switch ($choix) {
     Write-host "3) Les deux"
     $ip = Read-Host "Votre réponse : "
     Write-host ""
+    
 switch ($ip) {
 1 { 
     Get-NetIPConfiguration | Select-Object IPv4Address, InterfaceAlias | Out-Host
@@ -298,6 +314,9 @@ switch ($ip) {
     Get-NetIPConfiguration | Select-Object IPv4Address, IPv6Address, InterfaceAlias | Out-Host
     enregistrement_tout "Vision des adresses IPv4 et IPv6 des interfaces"
 }
+default {
+Write-Host "Choix invalide. Veuillez réessayer."
+}
     }
 }
 3 {
@@ -306,6 +325,9 @@ switch ($ip) {
     Write-Host "Il y a $((Get-NetAdapter).Count) interfaces connectées"
     Write-Host ""
     enregistrement_tout "Vision du nombre d'interfaces connectées"
+}
+default {
+Write-Host "Choix invalide. Veuillez réessayer."
 }
 }
 }
@@ -389,9 +411,87 @@ enregistrement_tout "Directon vers le menu de gestion des droits et permissions"
     Get-WmiObject -Class Win32_LogonSession | Select-Object Name, LogonId, LogonType | Out-Host
     enregistrement_tout "Vision de la liste des sessiosn ouvertes"
 }
+default {
+Write-Host "Choix invalide. Veuillez réessayer."
+}
 }
 }
 }
 
 
 ################################################
+
+#START
+
+function start
+{
+Clear-Host
+while ($true) {
+Write-Host ""
+
+Write-Host "BIENVENUE DANS LE MENU D'ADMINISTRATION"
+Write-Host "Que voulez-vous faire ? "
+Write-Host "1. Gérer les utilisateurs"
+Write-Host "2. Gérer la sécurité"
+Write-Host "3. Gérer le paramétrage réseaux"
+Write-Host "4. Gérer les logiciels et répertoires"
+Write-Host "5. Gérer le système"
+Write-Host "6. Rechercher une information déjà demandée/un évenement"
+Write-Host "0. Changer de cible utilisateur et machine"
+Write-Host "X. Quitter"
+$choix = Read-Host "Votre réponse "
+switch ($choix) {
+1 {
+enregistrement_tout "Direction vers le menu de gestion des utilisateurs"
+    Gestion_Utilisateur
+}
+    #direction vers security = lancement fonction security
+2 {
+enregistrement_tout "Direction vers le menu de gestion de la sécurité"
+security
+}
+
+    #direction vers reseaux = lancement fonction reseaux
+3 {
+enregistrement_tout "Direction vers le menu de gestion du paramétrage réseau"
+reseaux
+}
+
+    #direction vers repertoire_logiciel = lancement fonction repertoire_logiciel
+4 {
+enregistrement_tout "Direction vers le menu de gestion des logiciels et répertoires"
+repertoire_logiciel
+}
+
+    #direction vers Gestion_Systeme = lancement fonction Gestion_Systeme
+5 {
+enregistrement_tout "Direction vers le menu de gestion du système"
+Gestion_Systeme
+}
+
+6 {
+enregistrement_tout "Direction vers la recherche dans le log"
+recherche_log
+}
+
+0 {
+enregistrement_tout "Changement de cible via ssh"
+ssh_cible
+}
+
+x {
+Write-Host "Au revoir !"
+enregistrement_tout "*********EndScript*********"
+exit 0
+}
+
+default {
+Write-Host "Choix invalide. Veuillez réessayer."
+}
+
+}
+}
+}
+
+enregistrement_tout "********StartScript********"
+start
