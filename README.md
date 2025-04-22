@@ -1,6 +1,5 @@
-# Readme
 
-![logo de la Wild Code SChool en exemple](Ressources/logo_WCS.jpg)
+![Scripting Project](Ressources/Projet2Scripting)
 
 ## Sommaire 
 
