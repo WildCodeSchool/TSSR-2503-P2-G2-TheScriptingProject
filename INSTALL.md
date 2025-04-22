@@ -96,17 +96,17 @@ Maintenant, établissons la connexion entre les machines. Pour cela, nous allons
 Dans l'explorateur de fichiers, nous allons suivre le chemin suivant : C:\Windows\System32\drivers\etc pour ouvrir le fichier hosts. Ajoutons-y les adresses IP des autres machines :
    
 ![reseau_CLIWIN01](Ressources/screen_reseau_CLIWIN01.png) 
-
-   ##### 1.3.c Serveur Debian  
-<span id="Serveur-Debian_reseau"></span>
-Nous allons procéder à la même chose sur le serveur Debian. Pour cela, même commande (le sudo n'est pas nécessaire si vous êtes sur le compte root) ```nano /etc/hosts```  
-Vous pouvez maintenant ajouter les adresses IP des machines de votre futur réseau. 
-
-![reseau_debian](Ressources/screen_reseau_SRVLX01.png)  
-   ##### 1.3.d Windows Serveur 2022  
+ 
+   ##### 1.3.c Windows Serveur 2022  
 <span id="Windows-Serveur-2022_reseau"></span>
 Nous allons maintenant le faire sur le serveur Windows. Comme pour la machine cliente, dans l'explorateur de fichiers, nous allons suivre le chemin suivant : C:\Windows\System32\drivers\etc pour ouvrir le fichier hosts. Ajoutons-y les adresses IP des autres machines :
 
 ![reseau_windows](Ressources/screen_reseau_SRVWIN01.png) 
 
 
+   ##### 1.3.d Serveur Debian  
+<span id="Serveur-Debian_reseau"></span>
+Nous allons procéder à la même chose sur le serveur Debian. Pour cela, même commande (le sudo n'est pas nécessaire si vous êtes sur le compte root) ```nano /etc/hosts```  
+Vous pouvez maintenant ajouter les adresses IP des machines de votre futur réseau. 
+
+![reseau_debian](Ressources/screen_reseau_SRVLX01.png) 
