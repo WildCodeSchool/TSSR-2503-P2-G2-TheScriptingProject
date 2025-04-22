@@ -1,5 +1,5 @@
 
-![Scripting Project](Ressources/Projet2Scripting.jpeg)
+![Scripting Project](Ressources/Projet2Scripting.jpg)
 
 ## Sommaire 
 
