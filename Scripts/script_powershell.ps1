@@ -44,7 +44,7 @@ clear-host
 ## Menu interactif 
 function MenuUtilisateur {
     #Clear-Host
-    Write-Host "==========================" -ForegroundColor Magenta
+    Write-Host "====================================================" -ForegroundColor Magenta
     Write-Host "== Bienvenue dans la Gestion des utilisateurs locaux ==" -ForegroundColor Cyan
     Write-Host "1. Supprimer un utilisateur"
     write-host "2. Créer un utilisateur"
@@ -53,7 +53,7 @@ function MenuUtilisateur {
     Write-Host "5. Gestion des groupes d'utilisateurs"
     Write-Host "6. Liste des utilisateurs"
     Write-Host "X. Quitter le programme"
-    Write-Host "==========================" -ForegroundColor Magenta
+    Write-Host "====================================================" -ForegroundColor Magenta
 }
 
 
@@ -98,7 +98,7 @@ function AjouterUtilisateur {
         # On vérifie si l'utilisateur existe déjà
         if (Get-LocalUser -Name $username -ErrorAction SilentlyContinue) {
             # On affiche un message d'erreur si l'utilisateur existe déjà
-            Write-Host "ERREUR... L'utilisateur $username existe déjà. Veuillez réessayer" -ForegroundColor Red
+            Write-Host "Choix invalide. Veuillez réessayer" -ForegroundColor Red
         } 
         else {
             # On demande le mot de passe de l'utilisateur à créer
@@ -184,7 +184,7 @@ function ListerUtilisateurs {
         Write-Host "Nom complet : $($user.FullName)"
         Write-Host "Description : $($user.Description)"
         Write-Host "État du compte : $($user.Enabled)"
-        Write-Host "==========================" -ForegroundColor Magenta
+        Write-Host "====================================================" -ForegroundColor Magenta
     } 
     
 }
@@ -197,13 +197,14 @@ function ListerUtilisateurs {
 
 function MenuGroupe {
     Clear-Host
-    Write-Host "==========================" -ForegroundColor Magenta
+    Write-Host "====================================================" -ForegroundColor Magenta
     Write-Host "== Bienvenue dans la Gestion des groupes d'utilisateurs locaux ==" -ForegroundColor Cyan
     Write-Host "1. Ajouter à un groupe d'administration"
     Write-Host "2. Ajouter un utilisateur à un groupe local"
     write-host "3. Supprimer un utilisateur d'un groupe"
     Write-Host "R. Revenir au Menu Précédent"
-    Write-Host "==========================" -ForegroundColor Magenta
+    Write-Host "X. Quittez"
+    Write-Host "====================================================" -ForegroundColor Magenta
 }
 
 ########                                            ########
@@ -340,11 +341,15 @@ do {
         "4" { DésactiverUtilisateur }
         "5" { GestionGroupe }
         "6" { ListerUtilisateurs }
+        "R" { 
+        Write-Host "Retour au menu principal..." -ForegroundColor Green
+        return
+        }
         "X" {
-                Write-Host "Merci d'avoir utilisé le script de gestion des utilisateurs. Au revoir !" -ForegroundColor Green
+                Write-Host "Au revoir !" -ForegroundColor Green
                 exit
             }
-        default { Write-Host " ERREUR... Veuillez choisir 1-6 ou "X" pour quitter. " -ForegroundColor Red }
+        default { Write-Host "Choix invalide. Veuillez réessayer." -ForegroundColor Red }
     }
 } while ($true)
 
@@ -393,14 +398,14 @@ Write-Host "Choix invalide. Veuillez réessayer." -ForegroundColor Red
 function Gestion_Droits {
 Clear-Host
 while ($true) {
-Write-Host "==========================" -ForegroundColor Magenta
-Write-Host "`n`t`tMENU GESTION DES DROITS" -ForegroundColor Red
+Write-Host "====================================================" -ForegroundColor Magenta
+Write-Host "== Bienvenue dans la gestion des doits et permissions ==" -ForegroundColor Cyan
 Write-Host "`n Que voulez-vous voir ?"
 Write-Host "1. Droits/Permissions de l'utilisateur sur un dossier :"
 Write-Host "2. Droits/Permissions de l'utilisateur sur un fichier :"
 Write-Host "R. Retour au menu précédent"
 Write-Host "X. Quitter"
-Write-Host "==========================" -ForegroundColor Magenta
+Write-Host "====================================================" -ForegroundColor Magenta
 $choix = Read-Host "Votre réponse "
 
 switch ($choix) {
@@ -424,6 +429,14 @@ switch ($choix) {
         Write-Host "Le fichier n'existe pas." -ForegroundColor Red
     }
 }
+R {
+    enregistrement_tout "Direction vers le menu de gestion de la sécurité"
+    Security
+}
+X {
+Write-Host "Au revoir !" -ForegroundColor Green
+}
+
 default {
     Write-Host "Choix invalide. Veuillez réessayer." -ForegroundColor Red
 }
@@ -437,8 +450,8 @@ default {
 function repertoire_logiciel {
 Clear-Host
 while ($true) {
-Write-Host "==========================" -ForegroundColor Magenta
-Write-host "`n`t`tMENU GESTION REPERTOIRES/LOGICIELS" -ForegroundColor Red
+Write-Host "====================================================" -ForegroundColor Magenta
+Write-Host "== Bienvenue dans la gestion des répertoires et logiciels ==" -ForegroundColor Cyan
 Write-host "`n Que voulez vous faire ? "
 Write-host "1) Créer un répertoire"
 Write-host "2) Suppression d'un répertoire"
@@ -448,7 +461,7 @@ Write-host "5) Voir la liste des applications et paquets installés"
 Write-host "6) Executer de script sur machine distante"
 Write-host "R) Menu Principal"
 Write-host "X) Quitter"
-Write-Host "==========================" -ForegroundColor Magenta
+Write-Host "====================================================" -ForegroundColor Magenta
 $choix = Read-Host "Votre réponse "
 
 switch ($choix) {
@@ -507,7 +520,7 @@ r { enregistrement_tout "Direction vers le menu principal"
 }
 x {
     Write-Host ""
-    Write-Host "Au revoir !" -ForegroundColor Red
+    Write-Host "Au revoir !" -ForegroundColor Green
     enregistrement_tout "*********EndScript*********"
     exit 0
 }
@@ -524,14 +537,14 @@ Write-Host "Choix invalide. Veuillez réessayer." -ForegroundColor Red
 function regles{
 Clear-Host
 while ($true) {
-Write-Host "==========================" -ForegroundColor Magenta
-Write-Host "`n`t`tMENU REGLE DE PARE-FEU" -ForegroundColor Red
+Write-Host "====================================================" -ForegroundColor Magenta
+Write-Host "== Bienvenue dans la gestion des règles pare-feu ==" -ForegroundColor Cyan
 Write-host "`n Que voulez vous faire ?"
 Write-host "1) Activer/désactiver les connexions avec une adresse IP spécifique"
 Write-host "2) Activer/désactiver les connexions via ssh"
 Write-host "R) Retour au menu précédent"
 Write-host "X) Quitter"
-Write-Host "==========================" -ForegroundColor Magenta
+Write-Host "====================================================" -ForegroundColor Magenta
 $choix = Read-Host "Votre réponse "
 
 switch ($choix) {
@@ -590,6 +603,15 @@ Write-Host ""
     }
 Write-Host ""
 }
+r { enregistrement_tout "Direction vers le menu de gestion de la sécurité"
+    Security
+}
+x {
+    Write-Host ""
+    Write-Host "Au revoir !" -ForegroundColor Green
+    enregistrement_tout "*********EndScript*********"
+    exit 0
+}
 default {
 Write-Host "Choix invalide. Veuillez réessayer." -ForegroundColor Red
 }
@@ -602,15 +624,15 @@ Write-Host "Choix invalide. Veuillez réessayer." -ForegroundColor Red
 function reseaux{
 Clear-Host
 while ($true) {
-Write-Host "==========================" -ForegroundColor Magenta
-Write-host "`n`t`tMENU GESTION DU RESEAU" -ForegroundColor Red
+Write-Host "====================================================" -ForegroundColor Magenta
+Write-Host "== Bienvenue dans la gestion du réseau ==" -ForegroundColor Cyan
 Write-host "`n Que voulez vous faire ?"
 Write-host "1) Voir l'adresse MAC"
 Write-host "2) Voir les adresses IP des interfaces"
 Write-host "3) Voir le nombre d'interfaces"
 Write-host "R) Retour au menu précédent"
 Write-host "X) Quitter"
-Write-Host "==========================" -ForegroundColor Magenta
+Write-Host "====================================================" -ForegroundColor Magenta
 $choix = Read-Host "Votre réponse "
 
 switch ($choix) {
@@ -656,6 +678,15 @@ Write-Host "Choix invalide. Veuillez réessayer."
     Write-Host ""
     enregistrement_tout "Vision du nombre d'interfaces connectées"
 }
+r { enregistrement_tout "Direction vers le menu principal"
+    start
+}
+x {
+    Write-Host ""
+    Write-Host "Au revoir !" -ForegroundColor Green
+    enregistrement_tout "*********EndScript*********"
+    exit 0
+}
 default {
 Write-Host "Choix invalide. Veuillez réessayer." -ForegroundColor Red
 }
@@ -669,9 +700,9 @@ Write-Host "Choix invalide. Veuillez réessayer." -ForegroundColor Red
 function Security {
 Clear-Host
 while ($true) {
-Write-Host "==========================" -ForegroundColor Magenta
-Write-host "`n`t`tMENU GESTION DE LA SECURITE" -ForegroundColor Red
-Write-host "`nQue voulez vous faire ?"
+Write-Host "====================================================" -ForegroundColor Magenta
+Write-Host "== Bienvenue dans la gestion de la sécurité ==" -ForegroundColor Cyan
+Write-host "`n Que voulez vous faire ?"
 Write-host "1. Activer un pare-feu"
 Write-host "2. Désactiver un pare-feu"
 Write-host "3. Définir des règles de pare-feu"
@@ -683,7 +714,7 @@ Write-host "8. Voir la date de dernier changement de mot de passe"
 Write-host "9. Voir la liste des sessions ouvertes"
 Write-host "R. Retour au menu précédent"
 Write-host "X. Quitter"
-Write-Host "==========================" -ForegroundColor Magenta
+Write-Host "====================================================" -ForegroundColor Magenta
 $choix = Read-Host "Votre réponse "
 
 switch ($choix) {
@@ -742,6 +773,15 @@ enregistrement_tout "Directon vers le menu de gestion des droits et permissions"
     Get-WmiObject -Class Win32_LogonSession | Select-Object Name, LogonId, LogonType | Out-Host
     enregistrement_tout "Vision de la liste des sessiosn ouvertes"
 }
+r { enregistrement_tout "Direction vers le menu principal"
+    start
+}
+x {
+    Write-Host ""
+    Write-Host "Au revoir !" -ForegroundColor Green
+    enregistrement_tout "*********EndScript*********"
+    exit 0
+}
 default {
 Write-Host "Choix invalide. Veuillez réessayer." -ForegroundColor Red
 }
@@ -759,8 +799,8 @@ function start
 Clear-Host
 while ($true) {
 Write-Host ""
-Write-Host "==========================" -ForegroundColor Magenta
-Write-Host "`n`t`tBIENVENUE DANS LE MENU D'ADMINISTRATION" -ForegroundColor Red
+Write-Host "====================================================" -ForegroundColor Magenta
+Write-Host "== Bienvenue dans le menu d'administration ==" -ForegroundColor Cyan
 Write-Host "`n Que voulez-vous faire ? "
 Write-Host "1. Gérer les utilisateurs"
 Write-Host "2. Gérer la sécurité"
@@ -770,7 +810,7 @@ Write-Host "5. Gérer le système"
 Write-Host "6. Rechercher une information déjà demandée/un évenement"
 Write-Host "0. Changer de cible utilisateur et machine"
 Write-Host "X. Quitter"
-Write-Host "==========================" -ForegroundColor Magenta
+Write-Host "====================================================" -ForegroundColor Magenta
 $choix = Read-Host "Votre réponse "
 switch ($choix) {
 1 {
@@ -812,7 +852,7 @@ ssh_cible
 }
 
 x {
-Write-Host "Au revoir !" -ForegroundColor Red
+Write-Host "Au revoir !" -ForegroundColor Green
 enregistrement_tout "*********EndScript*********"
 exit 0
 }
