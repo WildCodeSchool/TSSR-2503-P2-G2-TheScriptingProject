@@ -14,7 +14,7 @@
 function enregistrement_tout {
     #Les evenements seront écrits en $1 (apres l'appel de fonction)
     param ($Argument1)
-    Add-Content -Path c:\PerfLogs\log_evt.log -Value "$(Get-Date -Format "yyyyMMdd-HHmmss")-$env:USERNAME-$Argument1"
+    Add-Content -Path C:\Windows\System32\LogFiles\log_evt.log -Value "$(Get-Date -Format "yyyyMMdd-HHmmss")-$env:USERNAME-$Argument1"
 }
 
 #=========================================================
@@ -54,19 +54,73 @@ function enregistrement_information {
 ###                                               ###
 ########                                     ########
 
-function MenuUtilisateur {
-    
-    Write-Host "====================================================" -ForegroundColor Magenta
-    Write-Host "== Bienvenue dans la Gestion des utilisateurs locaux ==" -ForegroundColor Cyan
-    Write-Host "1. Supprimer un utilisateur"
-    write-host "2. Créer un utilisateur"
-    Write-Host "3. Changer le mot de passe d'un utilisateur"
-    write-host "4. Désactiver un utilisateur"
-    Write-Host "5. Gestion des groupes d'utilisateurs"
-    Write-Host "6. Liste des utilisateurs"
-    Write-Host "X. Quitter le programme"
-    Write-Host "====================================================" -ForegroundColor Magenta
-}
+function MenuUtilisateur 
+{
+    While ($true) 
+    {
+        Write-Host "====================================================" -ForegroundColor Magenta
+        Write-Host "== Bienvenue dans la Gestion des utilisateurs locaux ==" -ForegroundColor Cyan
+        Write-Host "1. Supprimer un utilisateur"
+        write-host "2. Créer un utilisateur"
+        Write-Host "3. Changer le mot de passe d'un utilisateur"
+        write-host "4. Désactiver un utilisateur"
+        Write-Host "5. Gestion des groupes d'utilisateurs"
+        Write-Host "6. Liste des utilisateurs"
+        Write-Host "R. Retour au menu principal"
+        Write-Host "X. Quitter le programme"
+        Write-Host "====================================================" -ForegroundColor Magenta
+        $choix = Read-Host "Entrez votre choix"
+        # On demande à l'administrateur de faire un choix
+        # On vérifie le choix de l'administrateur et on appelle la fonction correspondante
+        switch ($choix) 
+        {
+            "1"
+            { enregistrement_tout "Direction vers le menu de suprpession d'un utilisateur"
+                SupprimerUtilisateur 
+            }
+            "2" 
+            { 
+                enregistrement_tout "Direction vers le menu de création d'un utilisateur"
+                AjouterUtilisateur 
+            }
+            "3" 
+            { 
+                enregistrement_tout "Direction vers le menu de changement de mot de passe d'un utilisateur"
+                ChangerMdpUtilisateur 
+            }
+            "4" 
+            { 
+                enregistrement_tout "Direction vers le menu de désactivation d'un utilisateur"
+                DésactiverUtilisateur 
+            }
+            "5" 
+            { 
+                enregistrement_tout "Direction vers le menu de gestion des groupes"
+                GestionGroupe 
+            }
+            "6" 
+            { 
+                enregistrement_tout "Direction vers la liste des utilisateurs"
+                ListerUtilisateurs enregistrement_information user_info_log
+            }
+            "R" 
+            { 
+                Write-Host "Retour au menu principal..." -ForegroundColor Green
+                enregistrement_tout "Direction vers le menu principal"
+                return
+            }
+            "X" 
+            {
+                Write-Host "Au revoir !" -ForegroundColor Green
+                enregistrement_tout "*********EndScript*********"
+                exit
+            }
+            default { Write-Host "Choix invalide. Veuillez réessayer." -ForegroundColor Red }
+        }
+    } 
+} 
+
+
 
 
 ########                                 ########
@@ -331,7 +385,7 @@ function SupprimerUtilisateurGroupe {
 ########                                      ########
 
 function GestionGroupe {
-    # On fait une boucle pour la gestion des groupes
+    # On fait une boucle2 pour la gestion des groupes
         
     do {
         # On appelle la fonction MenuGroupe pour afficher le menu
@@ -357,49 +411,6 @@ function GestionGroupe {
     while ($true)
 }
 
-
-########                                 ########
-###                                           ###  
-###        APPELER LE MENU UTILISATEUR        ###
-###                                           ###
-########                                 ########
-
-# On appelle la fonction qui affiche le Menu Utilisateur en cas de choix "Gestion Utilisateur" dans le Menu Principal
-# On fait une boucle pour le menu utilisateur tant que l'administrateur ne veut pas quitter
-do {
-    # On appelle la fonction MenuUtilisateur pour afficher le menu
-    MenuUtilisateur
-    # On demande à l'administrateur de faire un choix
-    $choix = Read-Host "Entrez votre choix"
-    # On vérifie le choix de l'administrateur et on appelle la fonction correspondante
-    switch ($choix) {
-        "1" { enregistrement_tout "Direction vers le menu de suprpession d'un utilisateur"
-            SupprimerUtilisateur }
-        "2" { enregistrement_tout "Direction vers le menu de création d'un utilisateur"
-             AjouterUtilisateur }
-        "3" { enregistrement_tout "Direction vers le menu de changement de mot de passe d'un utilisateur"
-             ChangerMdpUtilisateur }
-        "4" { enregistrement_tout "Direction vers le menu de désactivation d'un utilisateur"
-            DésactiverUtilisateur }
-        "5" { enregistrement_tout "Direction vers le menu de gestion des groupes"
-            GestionGroupe }
-        "6" { enregistrement_tout "Direction vers la liste des utilisateurs"
-            ListerUtilisateurs }
-        "R" { 
-            Write-Host "Retour au menu principal..." -ForegroundColor Green
-            enregistrement_tout "Direction vers le menu principal"
-            return
-        }
-        "X" {
-            Write-Host "Au revoir !" -ForegroundColor Green
-            enregistrement_tout "*********EndScript*********"
-            exit
-        }
-        default { Write-Host "Choix invalide. Veuillez réessayer." -ForegroundColor Red }
-    }
-} while ($true)
-
-
 #=========================================================
 
 ########                                                ########
@@ -417,7 +428,7 @@ function recherche_log {
     Write-Host "Par l'évenement (Vision de..., Déplacement menu ... Activation SSH ...)"
     $recherche = Read-Host "Votre réponse "
     #On intègre la commande pour faire la recherche dans une variable pour faire un if (et donc avoir le résultat s'il y en a un, ou un message d'erreur s'il n'y  a pas de correspondance avec les mot-clefs insérés)
-    $resultat = Get-Content -Path "C:\PerfLogs\log_evt.log" | Where-Object { $_ -like "*$recherche*" }
+    $resultat = Get-Content -Path "C:\Windows\System32\LogFiles\log_evt.log" | Where-Object { $_ -like "*$recherche*" }
     if ($resultat) {
         Write-Host ""
         Write-Host "Résultat de la recherche :"
@@ -439,7 +450,7 @@ function recherche_log {
         #Pas d'autre recherche => retour au menu principal
         n {
             enregistrement_tout "Direction vers le menu principal" -ForegroundColor Green
-            start
+            MenuAdministration
         }
         default {
             Write-Host "Choix invalide. Veuillez réessayer." -ForegroundColor Red
@@ -585,7 +596,7 @@ function repertoire_logiciel {
             }
             r { 
                 enregistrement_tout "Direction vers le menu principal"
-                start
+                MenuAdministration
             }
             x {
                 Write-Host ""
@@ -623,7 +634,8 @@ function regles {
         Write-Host "====================================================" -ForegroundColor Magenta
         $choix = Read-Host "Votre réponse "
         # -- On appelle la fonction correspondante au choix de l'administrateur --
-        switch ($choix) {
+        switch ($choix) 
+        {
             1 {
                 #Activation/désactivation des connexions IP avec une adresse donnée
                 Write-Host ""
@@ -652,13 +664,12 @@ function regles {
                     }
                 }
             }
-            Write-Host ""
-            #}
             2 {
                 $ssh_onoff = Read-Host "Voulez-vous activer (o) ou désactiver (n) les connexions SSH ? "
                 $ssh_port = Read-Host "Sur quel port est le protocole SSH ? (22 par défaut)"
                 $ip_specifique = Read-Host "Avec quelle adresse IP ? "
-                switch ($ssh_onoff) {
+                switch ($ssh_onoff) 
+                {
                     o {
                         New-NetFirewallRule -DisplayName "AutoriserSSHEntrantDepuis:$ip_specifique" -Direction Inbound -Action Allow -Protocol TCP -RemotePort $ssh_port -RemoteAddress "$ip_specifique" -Enabled True > $null
                         New-NetFirewallRule -DisplayName "AutoriserSSHSortantVers:$ip_specifique" -Direction Outbound -Action Allow -Protocol TCP -RemotePort $ssh_port -RemoteAddress "$ip_specifique" -Enabled True > $null
@@ -773,7 +784,7 @@ function reseaux {
                 # Enregistrement de l'action dans le fichier log
                 enregistrement_tout "Direction vers le menu principal"
                 # Retour au menu principal
-                start
+                MenuAdministration
             }
             x {
                 # On Quitte le programme et on enregistre l'action dans le fichier log
@@ -899,8 +910,8 @@ function Security {
                 Write-Host "Retour au Menu Pricipal" -ForegroundColor Green
                 # Enregistrement de l'action dans le fichier log
                 enregistrement_tout "Direction vers le menu principal"
-                # On appelle la fonction start pour revenir au menu principal
-                start
+                # On appelle la fonction MenuAdministration pour revenir au menu principal
+                MenuAdministration
             }
             x {
                 # On Quitte le programme et on enregistre l'action dans le fichier log
@@ -925,7 +936,7 @@ function Security {
 ###                                                      ###
 ########                                            ########
 
-function start {
+function MenuAdministration {
     # On fait une boucle pour le menu principal d'administration
     # On affiche le menu principal d'administration
     while ($true) {
@@ -937,7 +948,7 @@ function start {
         Write-Host "2. Gérer la sécurité"
         Write-Host "3. Gérer le paramétrage réseaux"
         Write-Host "4. Gérer les logiciels et répertoires"
-        Write-Host "5. Gérer le système"
+        Write-Host "5. Gérer le système [Non Fonctionnel] "
         Write-Host "6. Rechercher une information déjà demandée/un évenement"
         Write-Host "0. Changer de cible utilisateur et machine"
         Write-Host "X. Quitter"
@@ -947,7 +958,7 @@ function start {
             1 {
                 # On appelle la fonction qui affiche le Menu Utilisateur et on enregistre l'action dans le fichier log
                 enregistrement_tout "Direction vers le menu de gestion des utilisateurs"
-                Gestion_Utilisateur
+                MenuUtilisateur
             }
             2 {
                 # On appelle la fonction qui affiche le Menu de gestion de la sécurité et on enregistre l'action dans le fichier log
@@ -1007,4 +1018,6 @@ if (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
     exit 1
 }
 enregistrement_tout "********StartScript********"
-start
+enregistrement_information
+Clear-Host
+MenuAdministration
