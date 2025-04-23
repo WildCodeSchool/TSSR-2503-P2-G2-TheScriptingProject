@@ -15,8 +15,11 @@
          1.3.c [SRVWIN01](#Windows-Serveur-2022_reseau)  
          1.3.d [SRVLX01](#Serveur-Debian_reseau)  
          
+### 2. [Configuration SSH](#configuration-SSH)  
+### 3. [Configuration WinRM](#configuration-WinRM)   
 
- 
+
+
 
 
 ### 1. Prérequis techniques
@@ -110,3 +113,32 @@ Nous allons procéder à la même chose sur le serveur Debian. Pour cela, même 
 Vous pouvez maintenant ajouter les adresses IP des machines de votre futur réseau. 
 
 ![reseau_debian](Ressources/screen_reseau_SRVLX01.png) 
+
+### 2. Configuration SSH
+<span id="configuration-SSH"></span>
+Pour permettre de faire des commandes depuis la machine SRVLX01 sur la machine CLILIN01, nous allons avoir besoin du protocole SSH.
+Le protocole SSH permet une connexion vers un utilisateur à distance sur la machine cible. Ici, nous voudrons nous connecter à l'utilisateur wilder sur la machine CLILIN01. L'utilisateur wilder faisant partie du groupe sudo, nous pourrons donc avoir les droits de super-utilisateur.
+
+Première étape est d'installer le serveur OpenSSH via la commande :  
+``sudo apt install openssh-server``
+
+Suite à quoi nous allons forcer le démarrage du service SSH via la commande :  
+``sudo systemctl start ssh``
+
+Puis l'activer pour chaque prochain démarrage via la commande :  
+``sudo systemctl enable ssh``
+
+Il est possible de vérifier le statut est bien en enable par la commande :  
+``sudo systemctl status ssh``
+
+Il est possible de configurer le seveur SSH en modifiant le fichier ``etc/ssh/sshd_config``  
+Il est par exemple possible de modifier le port d'écoute par défaut (qui est le 22) pour une meilleure sécurité (pas vraiment utile dans notre cas).  
+Ou encore de configurer une clé SSH pour ne pas avoir à entrer le mot de passe de la session utilisée (ce ne sera pas fait non plus dans notre application)
+
+Pour configurer le pare-feu à autoriser les connexions ssh, on applique la commande suivante :  
+``sudo ufw allow ssh``
+
+Tout est maintenant prêt à l'utilisation.
+
+### 3. Configuration WinRM 
+<span id="configuration-WinRM"></span>
