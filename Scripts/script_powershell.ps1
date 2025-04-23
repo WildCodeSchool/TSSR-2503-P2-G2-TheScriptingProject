@@ -253,11 +253,13 @@ function AjouterUtilisateurGroupe {
             Add-LocalGroupMember -Group $groupname -Member $username
             # On affiche un message de confirmation de l'ajout de l'utilisateur au groupe
             Write-Host "L'utilisateur $username a été ajouté au groupe $groupname avec succès." -ForegroundColor Green
+            enregistrement_tout "Ajout de l'utilisateur $user au groupe $groupname"
             break
         } 
         else {
             # On affiche un message d'erreur si l'utilisateur ou le groupe n'existe pas
             Write-Host "ERREUR... L'utilisateur $username ou le groupe $groupname n'existe pas. Veuillez réessayer" -ForegroundColor Red
+            enregistrement_tout "Erreur d'ajout de l'utilisateur $username au groupe $groupname"
         }
     }
     while ($true)
@@ -280,11 +282,13 @@ function AjouterUtilisateurGroupeAD {
             Add-ADGroupMember -Identity $groupname -Members $username
             # On affiche un message de confirmation de l'ajout de l'utilisateur au groupe AD
             Write-Host "L'utilisateur $username a été ajouté au groupe AD $groupname avec succès." -ForegroundColor Green
+            enregistrement_tout "Ajout de l'utilisateur $username au groupe AD $groupname"
             break
         } 
         else {
             # On affiche un message d'erreur si l'utilisateur ou le groupe AD n'existe pas
             Write-Host "ERREUR... L'utilisateur $username ou le groupe AD $groupname n'existe pas. Veuillez réessayer" -ForegroundColor Red
+            enregistrement_tout "Erreur de l'ajout de l'utilisateur $username au groupe AD $groupname"
         }
     }
     while ($true)
@@ -308,11 +312,13 @@ function SupprimerUtilisateurGroupe {
             Remove-LocalGroupMember -Group $groupname -Member $username
             # On affiche un message de confirmation de la suppression de l'utilisateur du groupe
             Write-Host "L'utilisateur $username a été supprimé du groupe $groupname avec succès." -ForegroundColor Green
+            enregistrement_tout "Suprpession de l'utilisateur $username du groupe $groupname"
             break
         } 
         else {
             # On affiche un message d'erreur si l'utilisateur ou le groupe n'existe pas
             Write-Host "ERREUR... L'utilisateur $username ou le groupe $groupname n'existe pas. Veuillez réessayer" -ForegroundColor Red
+            enregistrement_tout "Erreur de suppression de l'utilisateur $username du groupe $groupname"
         }
     }
     while ($true)
@@ -334,11 +340,15 @@ function GestionGroupe {
         $choix = Read-Host "Veuillez choisir une option"
         # On vérifie le choix de l'administrateur et on appelle la fonction correspondante
         switch ($choix) {
-            "1" { AjouterUtilisateurGroupe }
-            "2" { AjouterUtilisateurGroupeAD }
-            "3" { SupprimerUtilisateurGroupe }
+            "1" { enregistrement_tout "Direction vers le menu d'ajout d'un utilisateur à un groupe"
+                 AjouterUtilisateurGroupe }
+            "2" { enregistrement_tout "Direction vers le menu d'ajout d'un utilisateur à un groupe AD"
+                 AjouterUtilisateurGroupeAD }
+            "3" { enregistrement_tout "Direction vers le menu de suppression d'un utilisateur d'un groupe"
+                 SupprimerUtilisateurGroupe }
             "R" { 
                 Write-Host "Retour au menu principal..." -ForegroundColor Green
+                enregistrement_tout "Direction vers le menu principal"
                 return
             }
             default { Write-Host "Choix invalide. Veuillez réessayer." -ForegroundColor Red }
@@ -363,18 +373,26 @@ do {
     $choix = Read-Host "Entrez votre choix"
     # On vérifie le choix de l'administrateur et on appelle la fonction correspondante
     switch ($choix) {
-        "1" { SupprimerUtilisateur }
-        "2" { AjouterUtilisateur }
-        "3" { ChangerMdpUtilisateur }
-        "4" { DésactiverUtilisateur }
-        "5" { GestionGroupe }
-        "6" { ListerUtilisateurs }
+        "1" { enregistrement_tout "Direction vers le menu de suprpession d'un utilisateur"
+            SupprimerUtilisateur }
+        "2" { enregistrement_tout "Direction vers le menu de création d'un utilisateur"
+             AjouterUtilisateur }
+        "3" { enregistrement_tout "Direction vers le menu de changement de mot de passe d'un utilisateur"
+             ChangerMdpUtilisateur }
+        "4" { enregistrement_tout "Direction vers le menu de désactivation d'un utilisateur"
+            DésactiverUtilisateur }
+        "5" { enregistrement_tout "Direction vers le menu de gestion des groupes"
+            GestionGroupe }
+        "6" { enregistrement_tout "Direction vers la liste des utilisateurs"
+            ListerUtilisateurs }
         "R" { 
             Write-Host "Retour au menu principal..." -ForegroundColor Green
+            enregistrement_tout "Direction vers le menu principal"
             return
         }
         "X" {
             Write-Host "Au revoir !" -ForegroundColor Green
+            enregistrement_tout "*********EndScript*********"
             exit
         }
         default { Write-Host "Choix invalide. Veuillez réessayer." -ForegroundColor Red }
@@ -457,6 +475,7 @@ function Gestion_Droits {
                 } 
                 else {
                     Write-Host "Le dossier n'existe pas." -ForegroundColor Red
+                    enregistrement_tout "Erreur lors de la vérification des droits et permission du dossier $dossier"
                 }
             }
             2 {
@@ -467,6 +486,7 @@ function Gestion_Droits {
                 }
                 else {
                     Write-Host "Le fichier n'existe pas." -ForegroundColor Red
+                    enregistrement_tout "Erreur lors de la vérifications des droits et permissions du fichier $fichier"
                 }
             }
             R {
@@ -475,6 +495,8 @@ function Gestion_Droits {
             }
             X {
                 Write-Host "Au revoir !" -ForegroundColor Green
+                enregistrement_tout "*********EndScript*********"
+                exit 0
             }
             default {
                 Write-Host "Choix invalide. Veuillez réessayer." -ForegroundColor Red
@@ -513,6 +535,7 @@ function repertoire_logiciel {
                 $repertoire = Read-Host "Quel nom voulez-vous donner au répertoire (écrire le path absolu) "
                 if (Test-Path -Path $repertoire) {
                     Write-Output "Le répertoire $repertoire existe déjà" -ForegroundColor Red
+                    enregistrement_tout "Erreur lors de la création du répertoire $repertoire, le répertoire existe déjà"
                 }
                 else {
                     New-Item -ItemType Directory -Path $repertoire -Force > $Null
@@ -529,6 +552,7 @@ function repertoire_logiciel {
                 }
                 else {
                     Write-Host "Répertoire $repertoire n'existe pas" -ForegroundColor Red
+                    enregistrement_tout "Erreur lors de la suppression du répertoire $repertoire, le répertoire n'existe pas"
                 }
             }
             3 {
@@ -541,6 +565,7 @@ function repertoire_logiciel {
                 }
                 else {
                     Write-Host "Logiciel non trouvé dans la liste des paquets Winget" -ForegroundColor Red
+                    enregistrement_tout "Erreur, logiciel $logiciel non trouvé dans la liste des paquets Winget"
                 }
             }
             4 {
