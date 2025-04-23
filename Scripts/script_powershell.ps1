@@ -4,6 +4,17 @@
 ###         LANCEMENT NECESSAIRE EN ADMINISTRATEUR      ###
 ########                                           ########
 
+#initialisation de quelques variables :
+$dossier_log = "c:\Projet2\log"
+$date = Get-Date -Format "yyyyMMdd-HHmmss"
+# On ajuste le nom du fichier pour une information ordinateur sous la forme <NomDuPC>-GEN_<Date>.txt qui sera créé dans le dossier "log"
+$ordi_info_log = "info_$env:COMPUTERNAME_GEN_$date.txt"
+# On ajuste le nom du fichier pour une information utilisateur sous la forme <NomDuPC>_<NomDeLUtilisateur>_<Date>.txt  
+$user_info_log="info_$env:COMPUTERNAME_$env:USERNAME_$date.txt"
+
+
+
+
 # ===========================================================
 
 ########                                           ########
@@ -26,18 +37,16 @@ function enregistrement_tout {
 ########                                         ########
 
 #fonction pour enregistrer les informations dans le dossier log (dans le dossier d execution du script, donc la où on sera quand on executera le script)
-function enregistrement_information {
-    $dossier_log = "log"
-
+function creation_dossier_log {
+    #création du dossier contenant les logs s'il n existe pas déjà
     if (-not (Test-Path -Path $dossier_log -PathType Container)) {
         New-Item -Path $dossier_log -ItemType Directory
     }
-    $date = Get-Date -Format "yyyyMMdd-HHmmss"
-    # On ajuste le nom du fichier pour une information ordinateur sous la forme <NomDuPC>-GEN_<Date>.txt qui sera créé dans le dossier "log"
-    ordi_info_log="info_$env:COMPUTERNAME_GEN_$date.txt"
-    # On ajuste le nom du fichier pour une information utilisateur sous la forme <NomDuPC>_<NomDeLUtilisateur>_<Date>.txt     
-    user_info_log="info_$env:COMPUTERNAME_$env:USERNAME_$date.txt"
+    #Création du fichier sous bon format
+ #   New-Item -Path $dossier_log\$ordi_info_log -ItemType File 
+#Out-File $dossier_log\$ordi_info_log
 }
+
 
 #=========================================================
 
@@ -263,10 +272,15 @@ function ListerUtilisateurs {
         # On enregistre les informations de chaque utilisateur dans le dossier log user_info_log
         $users = "Nom d'utilisateur : $($user.Name)`nNom complet : $($user.FullName)`nDescription : $($user.Description)`nÉtat du compte : $($user.Enabled)"
         Write-Host "Nom d'utilisateur : $($user.Name)"
+        "Nom d'utilisateur : $($user.Name)" | Out-File -FilePath "$dossier_log\$user_info_log"
         Write-Host "Nom complet : $($user.FullName)"
+        "Nom complet : $($user.FullName)" | Out-File -FilePath "$dossier_log\$user_info_log"
         Write-Host "Description : $($user.Description)"
+        "Description : $($user.Description)" | Out-File -FilePath "$dossier_log\$user_info_log"
         Write-Host "État du compte : $($user.Enabled)"
+        "État du compte : $($user.Enabled)" | Out-File -FilePath "$dossier_log\$user_info_log"
         Write-Host "====================================================" -ForegroundColor Magenta
+        
     } 
     
 }
@@ -481,7 +495,8 @@ function Gestion_Droits {
             1 { 
                 $dossier = Read-Host "De quel dossier voulez-vous vérifier les droits (donnez le path absolu ? "
                 if (Test-Path $dossier) {
-                    Get-Acl -Path $dossier
+                    Get-Acl -Path $dossier 
+                    Get-Acl -Path $dossier | Out-File -FilePath "$dossier_log\$user_info_log"
                     enregistrement_tout "Vérification des droits et permissions du dossier $dossier"
                 } 
                 else {
@@ -493,6 +508,7 @@ function Gestion_Droits {
                 $fichier = Read-Host "De quel fichier voulez-vous vérifier les droits (donnez le path absolu) ? "
                 if (Test-Path $fichier) {
                     Get-Acl -Path $fichier
+                    Get-Acl -Path $fichier | Out-File -FilePath "$dossier_log\$user_info_log"
                     enregistrement_tout "Vérifications des droits et permissions du fichier $fichier"
                 }
                 else {
@@ -588,6 +604,7 @@ function repertoire_logiciel {
             5 {
                 Write-Host "Les applications et paquets installés sont :"
                 winget list
+                winget list | Out-File -FilePath "$dossier_log\$user_info_log"
                 enregistrement_tout "Vision de tous les paquets et applications installés"
             }   
             6 { 
@@ -739,6 +756,7 @@ function reseaux {
                 Write-Host ""
                 #Lors de la premiere itération de la boucle, le resultat de la commande ne s'affichait pas mais s'affichait bien lors de la seconde intération (et au dela) surement du a un temps de récupération de l'info, d'où l'ajout de "| Out-Host" qui permet de forcer l'affichage du résultat
                 $(Get-NetAdapter | Select-Object Name, MacAddress) | Out-Host
+                $(Get-NetAdapter | Select-Object Name, MacAddress) | Out-File -FilePath "$dossier_log\$ordi_info_log"
                 enregistrement_tout "Vision des adresses MAC des cartes réseaux"
             }
             2 {
@@ -753,17 +771,20 @@ function reseaux {
                     
                 switch ($ip) {
                     1 { 
-                        Get-NetIPConfiguration | Select-Object IPv4Address, InterfaceAlias | Out-Host -ForegroundColor Green
+                        Get-NetIPConfiguration | Select-Object IPv4Address, InterfaceAlias | Out-Host
+                        Get-NetIPConfiguration | Select-Object IPv4Address, InterfaceAlias | Out-File -FilePath "$dossier_log\$ordi_info_log"
                         # On enregistre l'action dans le fichier log
                         enregistrement_tout "Vision des adresses IPv4 des interfaces"
                     }
                     2 {
-                        Get-NetIPConfiguration | Select-Object IPv6Address, InterfaceAlias | Out-Host -ForegroundColor Green
+                        Get-NetIPConfiguration | Select-Object IPv6Address, InterfaceAlias | Out-Host
+                        Get-NetIPConfiguration | Select-Object IPv6Address, InterfaceAlias | Out-File -FilePath "$dossier_log\$ordi_info_log"
                         # On enregistre l'action dans le fichier log
                         enregistrement_tout "Vision des adresses IPv6 des interfaces"
                     }
                     3 {
-                        Get-NetIPConfiguration | Select-Object IPv4Address, IPv6Address, InterfaceAlias | Out-Host -ForegroundColor Green
+                        Get-NetIPConfiguration | Select-Object IPv4Address, IPv6Address, InterfaceAlias | Out-Host
+                        Get-NetIPConfiguration | Select-Object IPv4Address, IPv6Address, InterfaceAlias | Out-File -FilePath "$dossier_log\$ordi_info_log"
                         # On enregistre l'action dans le fichier log
                         enregistrement_tout "Vision des adresses IPv4 et IPv6 des interfaces"
                     }
@@ -776,6 +797,7 @@ function reseaux {
                 # On affiche le Nombre d'interfaces
                 Write-Host ""
                 Write-Host "Il y a $((Get-NetAdapter).Count) interfaces connectées" -ForegroundColor Green
+                "Il y a $((Get-NetAdapter).Count) interfaces connectées" | Out-File -FilePath "$dossier_log\$ordi_info_log"
                 Write-Host ""
                 #On enregistre l'action dans le fichier log
                 enregistrement_tout "Vision du nombre d'interfaces connectées"
@@ -862,6 +884,8 @@ function Security {
                 # état du parefeu
                 Write-Host "Voici l'état du pare-feu :" -ForegroundColor Green
                 Get-NetFirewallProfile
+                enregistrement_information_ordinateur
+                Get-NetFirewallProfile | Out-File -FilePath "$dossier_log\$ordi_info_log"
                 # On enregistre l'action dans le fichier log
                 enregistrement_tout "Vision de l'état du pare-feu"
             }
@@ -874,6 +898,8 @@ function Security {
                 Write-Host "Les ports UDP ouverts sont :" -ForegroundColor Green
                 # On affiche les ports UDP ouverts
                 Get-NetUDPEndpoint | Format-Table -AutoSize
+                Get-NetTCPConnection | Out-File -FilePath "$dossier_log\$ordi_info_log"
+                Get-NetUDPEndpoint | Out-File -FilePath "$dossier_log\$ordi_info_log"
                 # On enregistre l'action dans le fichier log
                 enregistrement_tout "Vision des ports ouverts"
             }
@@ -888,6 +914,7 @@ function Security {
                 #le parametre [EventData[Data[@Name='TargetUserName' permet de filtrer l'élément dont le nom est 'TargetUserName' à l'interieur de EventData
                 #le parametre event ID 4624 dans le journal de sécurité Windows correspond à une connexion réussie
                 Get-WinEvent -LogName Security -FilterXPath "*[EventData[Data[@Name='TargetUserName']='$user'] and System[EventID='4624']]" -MaxEvents 1
+                Get-WinEvent -LogName Security -FilterXPath "*[EventData[Data[@Name='TargetUserName']='$user'] and System[EventID='4624']]" -MaxEvents 1 | Out-File -FilePath "$dossier_log\$user_info_log"
                 # On enregistre l'action dans le fichier log
                 enregistrement_tout "Vision de la dernière connexion de l'utilisateur $user"
             }
@@ -895,6 +922,7 @@ function Security {
                 $user = Read-Host "De quel utilisateur ? "
                 # On ne va afficher que la 9e ligne de la commande net user, qui correspond a la ligne du dernier changement de mdp (skip les 8 premieres, et puis que la premiere, donc la  9e)
                 net user $user | Select-Object -Skip 8 -First 1 -ForegroundColor Green
+                net user $user | Select-Object -Skip 8 -First 1 | Out-File -FilePath "$dossier_log\$user_info_log"
                 # On enregistre l'action dans le fichier log
                 enregistrement_tout "Vision de la dernière modification du mot de passe de l'utilisateur $user"
             }
@@ -902,6 +930,7 @@ function Security {
                 # On affiche la liste des sessions ouvertes
                 Write-Host "Voici la liste des sessions ouvertes :" -ForegroundColor Green
                 Get-WmiObject -Class Win32_LogonSession | Select-Object Name, LogonId, LogonType | Out-Host -ForegreoundColor Green
+                Get-WmiObject -Class Win32_LogonSession | Select-Object Name, LogonId, LogonType | Out-File -FilePath "$dossier_log\$user_info_log"
                 # On enregistre l'action dans le fichier log
                 enregistrement_tout "Vision de la liste des sessiosn ouvertes"
             }
@@ -1018,6 +1047,6 @@ if (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
     exit 1
 }
 enregistrement_tout "********StartScript********"
-enregistrement_information
+creation_dossier_log
 Clear-Host
 MenuAdministration
