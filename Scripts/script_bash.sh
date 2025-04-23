@@ -1067,6 +1067,7 @@ echo "3. Gérer le paramétrage réseaux"
 echo "4. Gérer les logiciels et répertoires"
 echo "5. Gérer le système"
 echo "6. Rechercher une information déjà demandée/un évenement"
+echo "7. Prise en main en distance [En développement] "
 echo "0. Changer de cible utilisateur et machine"
 echo "X. Quitter"
 read -p "Votre réponse : " choix
@@ -1093,6 +1094,10 @@ case $choix in
 
     6) enregistrement_tout "Direction vers la recherche d'information déjà demandée / recherche dans le log"
     recherche_tout
+    ;;
+
+    7) echo "Malheureusement, cette fonctionnalité est encore en développement. Navré."
+    echo "Retour au menu d'administration"
     ;;
 
     0) enregistrement_tout "Changement de cible via ssh"
