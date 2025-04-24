@@ -142,3 +142,53 @@ Tout est maintenant prêt à l'utilisation.
 
 ### 3. Configuration WinRM 
 <span id="configuration-WinRM"></span>
+
+
+
+
+
+
+
+
+
+
+
+
+-------------------
+❓ FAQ —
+-------------------
+**Q : Dois-je absolument exécuter apt update et apt upgrade avant ?**
+
+> _Oui, ces commandes permettent de s'assurer que tous les paquets installés sont à jour, ce qui peut éviter certains conflits ou bugs pendant l'installation._
+
+**Q : Que faire si la commande apt upgrade bloque ?**
+
+> _Vérifiez qu’aucun autre gestionnaire de paquets (comme dpkg, apt, ou apt-get) n’est en cours. Utilisez sudo lsof /var/lib/dpkg/lock-frontend pour identifier le processus en cours. Pensez à vérifier que vous avez encore la place nécéssaire sur votre disque_
+
+**Q : Puis-je utiliser d'autres adresses IP que celles indiquées dans le guide ?**
+
+> _Oui, mais il faudra adapter toutes les configurations en conséquence (fichier hosts, pare-feu, scripts, etc.). Il est conseillé de suivre les IP proposées pour éviter les erreurs._
+
+**Q : Comment vérifier que ma carte réseau s’appelle bien ens18 ?**
+
+> _Utilisez la commande ip a ou ip link pour voir le nom de vos interfaces réseau_.
+
+**Q : Je ne peux pas sauvegarder le fichier hosts sous Windows, que faire ?**
+
+> _Lancez votre éditeur de texte (ex : Bloc-notes) en mode administrateur, puis ouvrez manuellement le fichier à partir de l’application._
+
+**Q : Je n’ai pas les droits administrateur, puis-je tout de même suivre ce guide ?**
+
+>  _Non, certaines opérations (modification réseau, fichier hosts, installation de paquets) requièrent des droits administrateur ou sudo._
+
+**Q : Est-ce que ce guide fonctionne pour d’autres versions de Windows/Linux ?**
+
+> _Il est testé pour Windows 10/Server 2022 et Ubuntu 24.04/Debian 12.10. D’autres versions peuvent fonctionner mais peuvent nécessiter des ajustements._
+
+**Q : Pourquoi activer WinRM ?**
+
+> _WinRM permet d’exécuter des commandes PowerShell à distance sur les machines Windows. C’est utile pour l’administration sans interface graphique._
+
+**Q : Comment savoir si WinRM est bien activé ?**
+
+> _Exécute winrm quickconfig dans une console PowerShell avec droits administrateur. Le message doit indiquer que WinRM est activé._
