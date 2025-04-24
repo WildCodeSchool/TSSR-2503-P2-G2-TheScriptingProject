@@ -192,3 +192,13 @@ Tout est maintenant prêt à l'utilisation.
 **Q : Comment savoir si WinRM est bien activé ?**
 
 > _Exécute winrm quickconfig dans une console PowerShell avec droits administrateur. Le message doit indiquer que WinRM est activé._
+
+**Q : La commande ssh ne fonctionne pas, que faire ?**
+> _Vérifie que le paquet openssh-server est bien installé (dpkg -l | grep openssh), que le service est actif (systemctl status ssh) et que le port 22 est ouvert (ufw status)._
+
+**Q : J’ai une erreur "Permission denied" en SSH, que faire ?**
+> Vérifiez que :
+>- _L'utilisateur existe sur la machine distante._
+>- _Vous utilisez le bon mot de passe_
+>- _Le pare-feu est désactiver pour éviter les conflits avec les connexions SSH_
+
