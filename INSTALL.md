@@ -174,6 +174,10 @@ Tout est maintenant prêt à l'utilisation.
 
 > _Utilisez la commande ip a ou ip link pour voir le nom de vos interfaces réseau_.
 
+**Q : Comment vérifier le nom de ma carte réseau sur Windows ?**
+
+> _Utilisez la commande ipconfig pour afficher les différentes informations de votre carte réseaux dont son nom_
+
 **Q : Je ne peux pas sauvegarder le fichier hosts sous Windows, que faire ?**
 
 > _Lancez votre éditeur de texte (ex : Bloc-notes) en mode administrateur, puis ouvrez manuellement le fichier à partir de l’application._
