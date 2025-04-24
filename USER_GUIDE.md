@@ -2,7 +2,7 @@
 
 ### 1. [Se déplacer dans le menu](#se-déplacer-dans-le-menu)  
 ### 2. [Les fonctionnalités](#les-fonctionnalités)  
-
+###   — [FAQ](#faq) —
 
 
 
@@ -82,7 +82,8 @@ De plus, il est possible de quitter le script à tout moment en entrant ``X``.
 |Recherche d'une information déjà demandée/un évenement|/|Recherche des evenements dans le fichier log_evt.log pour un ordinateur|Recherche dans le fichier log de toutes les actions faites (déplacement dans le menu, actions faites, informations demandées, etc)|&check;|&check;|
 |Prise en main à distance|/|Prise de main à distance (GUI)|Faire une prise ne main à distance via un logiciel en graphique|&cross;|&cross;|
 -------------------
-# ❓ FAQ — 
+# ❓— FAQ — 
+<span id="faq"></span>
 -------------------
 
 **Q : Comment naviguer dans les menus ?**
