@@ -43,7 +43,7 @@ Les scripts permettent d'automatiser une ou plusieurs actions. Ils permettent ai
 
 Dans ce projet, nous allons proposer des fonctionnalités via les commandes associées, sur les versions Bash et PowerShell. Ces commandes seront employées à distances, via un protocole de connexion à distance : le SSH.
 
-Vous retrouvez plus d'information les documents USER_GUIDE.md et INSTALL.md
+Vous retrouverez plus d'information dans les documents USER_GUIDE.md et INSTALL.md.
 
 
 ## 👥 Membres du groupe par sprint
