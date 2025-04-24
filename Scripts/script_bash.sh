@@ -124,7 +124,7 @@ enregistrement_tout()
     #mettre l'evenement en argument 1
 evenement=$1
 #on utilise la commande tee -a pour ajouter au fichier log_evt/log car ce fichier se trouvant dans /var/log, et n'ayant pas l'autorisation de modifier et sauvegarder (écrire) dans ce dossier, on ne peut pas utiliser la redirection via ">>". On utilise donc une commande, avec laquelle on peut faire un sudo et permettre de modifier ce fichier.
-    echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-$evenement" | sudo tee -a /var/log/log_evt.log > /dev/null
+    echo "$(date +%Y/%m/%d-%H:%M:%S)-$USER-$evenement" | tee -a /var/log/log_evt.log > /dev/null
 
 }
 
@@ -150,14 +150,14 @@ case $choix in
 	read -p "Avec quelle adresse IP ? " ip_specifique
 	case $ip_onoff in
 		#on autorise de recevoir des connexions depuis l'adresse ip renseignée : ip_onoff
-		o) ssh "sudo ufw allow from $ip_specifique"
+		o) ssh -t $user_remote@$ip_remote "sudo ufw allow from $ip_specifique"
 		echo "Traffic entrant depuis l'adresse IP $ip_specifique autorisé" 
 		echo "Il est possible de voir toutes les règles en place dans 'Voir l'état du pare-feu'"
 		enregistrement_tout "Activation_traffic_de_$ip_specifique vers $IP";;
 		
 		#inversement, on bloque les connexions avec l'adresse ip renseignée : ip_onoff
 		#Les "vérifications" se font automatiquement : il y a en sortie normale si la regle a été ajoutée ou non
-		n) ssh "sudo ufw deny out to $ip_specifique"
+		n) ssh -t $user_remote@$ip_remote "sudo ufw deny out to $ip_specifique"
 		echo "Traffic sortant vers l'adresse IP $ip_specifique bloqué" 
 		echo "Il est possible de voir toutes les règles en place dans 'Voir l'état du pare-feu'"
 		enregistrement_tout "Désactivation traffic de $IP vers $ip_specifique"
@@ -167,18 +167,18 @@ case $choix in
 	#Activation/désactivation de ssh	
 	2) read -p "Souhaitez vous activer (o) ou désactiver (n) les connexions via ssh ?" ssh_onoff
 	case $ssh_onoff in
-		o) ssh "sudo ufw allow in ssh"
+		o) ssh -t $user_remote@$ip_remote "sudo ufw allow in ssh"
 		echo "Connexion via autorisée" 
 		enregistrement_tout "Activation connexion SSH"
 		;;
-		n) ssh "sudo ufw deny in ssh"
+		n) ssh -t $user_remote@$ip_remote "sudo ufw deny in ssh"
 		echo "Connexion via bloquée"  
 		enregistrement_tout "Désactivation connexion SSH"
 		;;
 	esac ;;
 	
 	#Réinitialisation par défaut, attention le pare-feu est donc désactivé après ça
-	A|a) ssh "sudo ufw reset "
+	A|a) ssh -t $user_remote@$ip_remote "sudo ufw reset "
 	enregistrement_tout "Réinitialisation des règles de pare-feu par défaut" ;;
 	
 	R|r) enregistrement_tout "Retour vers le menu Security"
@@ -214,13 +214,13 @@ read -p "Votre réponse : " choix
 case $choix in
 	#activation parefeu
 	1) echo ""
-	ssh "sudo ufw enable"
+	ssh -t $user_remote@$ip_remote "sudo ufw enable"
 	enregistrement_tout "Activation pare-feu"
 	;;
 	
 	#désactivation parefeu
 	2) echo ""
-	ssh "sudo ufw disable "
+	ssh -t $user_remote@$ip_remote "sudo ufw disable "
 	enregistrement_tout "Désactivation pare-feu"
 	;;
 	
@@ -230,12 +230,12 @@ case $choix in
 	
 	#voir l'état pare-feu
 	4) echo ""
-	ssh "sudo ufw status" | tee -a $dossier_log/$ordi_info_log
+	ssh -t $user_remote@$ip_remote "sudo ufw status" | tee -a $dossier_log/$ordi_info_log
 	enregistrement_tout "Voir état du pare-feu" ;;
 	
 	#Voir les ports ouverts
 	5) echo ""
-	ssh "netstat -tlnpu" | tee -a $dossier_log/$ordi_info_log
+	ssh -t $user_remote@$ip_remote "netstat -tlnpu" | tee -a $dossier_log/$ordi_info_log
 	enregistrement_tout "Infos ports ouverts" ;;
 	
 	6) enregistrement_tout "Direction menu gestion des droits d'un utilisateur sur un dossier ou fichier"
@@ -245,20 +245,20 @@ case $choix in
 	7) echo ""
 	read -p "Pour quel utilisateur ? " user
 	#Avoir que la premiere ligne
-	ssh "last -F $user | head -n 1" | tee -a $dossier_log/$user_info_log
+	ssh -t $user_remote@$ip_remote "last -F $user | head -n 1" | tee -a $dossier_log/$user_info_log
 	enregistrement_tout "Infos dernière connexion utilisateur pour $user" ;;
 	
 	#Derniere modif  mdp
 	8) echo ""
 	read -p "Pour quel utilisateur ? " user
 	#Avoir que la premiere ligne
-	ssh "sudo chage -l $user | head -n 1" | tee -a $dossier_log/$user_info_log
+	ssh -t $user_remote@$ip_remote "sudo chage -l $user | head -n 1" | tee -a $dossier_log/$user_info_log
 	enregistrement_tout "Infos dernier changement mot de passe pour $user" ;;
 	
 	#Liste sessions ouverte
 	9) echo ""
 	read -p "Pour quel utilisateur ? " user
-	ssh "w $user" | tee -a $dossier_log/$user_info_log
+	ssh -t $user_remote@$ip_remote "w $user" | tee -a $dossier_log/$user_info_log
 	enregistrement_tout "Infos liste des sessions ouvertes pour $user" ;;
 	
 	r) enregistrement_tout "Retour vers le menu Start"
@@ -282,7 +282,7 @@ done
 reseaux()
 {
 while true; do
-echo -e "\n\t\e [31mMENU GESTION DU RESEAU\e[0m"
+echo -e "\n\t\e[31mMENU GESTION DU RESEAU\e[0m"
 echo -e "\nQue voulez vous faire ? "
 echo "1) Voir l'adresse MAC"
 echo "2) Voir les adresses IP des interfaces"
@@ -291,20 +291,20 @@ echo "R) Retour au menu précédent"
 echo "X) Quitter"
 read -p "Votre réponse : " choix
 case $choix in
-	#Voir l'adresse MAC IL MANQUE SSH
+	#Voir l'adresse MAC
 	1) echo ""
-	ssh "ip a | grep "link/ether*" | awk -F " " '{print $2}'" | tee -a $dossier_log/$ordi_info_log  
-	enregistrement_tout "Infos adresse mac de $HOSTNAME" ;;
+	ssh -t $user_remote@$ip_remote "ip a | grep "link/ether*" | awk -F " " '{print $2}'" | tee -a $dossier_log/$ordi_info_log  
+	enregistrement_tout "Infos adresse mac de $ip_remote" ;;
 	
 	#Voir adresse IP des interfaces
 	2) echo ""
-	ssh "cat /etc/hosts | grep "127*"" | tee -a $dossier_log/$ordi_info_log  
-	enregistrement_tout "Infos adresses IP des interfaces connectées avec $HOSTNAME" ;;
+	ssh -t $user_remote@$ip_remote "cat /etc/hosts | grep "172*"" | tee -a $dossier_log/$ordi_info_log  
+	enregistrement_tout "Infos adresses IP des interfaces connectées avec $ip_remote" ;;
 	
 	#Voir le nombre d'interfaces (donc le nombre de lignes)
-	3) echo ""
-	ssh "cat /etc/hosts | grep "127*" | wc -l" | tee -a $dossier_log/$ordi_info_log
-	enregistrement_tout "Infos nombre d'interfaces connectées à $HOSTNAME" ;;
+	3) echo "Voici le nombre d'interfaces connectées"
+	ssh -t $user_remote@$ip_remote "cat /etc/hosts | grep "172*" | wc -l" | tee -a $dossier_log/$ordi_info_log
+	enregistrement_tout "Infos nombre d'interfaces connectées à $ip_remote" ;;
 	
 	#retour au menu précédent
 	R|r) enregistrement_tout "Retour au menu principal"
@@ -342,10 +342,10 @@ do
         case $signe in
        		+) read -p "Nom d'utilisateur : " user
 		    # Vérification si l'utilisateur existe
-	    	if ssh "id "$user"" &>/dev/null; then
+	    	if ssh -t $user_remote@$ip_remote "id "$user"" &>/dev/null; then
 			read -p "Nom du dossier (entrez le path absolu) : " dossier
 			# Vérification si le dossier existe
-                if ssh "[ -d "$dossier" ]";
+                if ssh -t $user_remote@$ip_remote "[ -d "$dossier" ]";
                     then
                     echo -e "\n1) Donner les droits de lecture à l'utilisateur"
                     echo "2) Donner les droits d'écriture à l'utilisateur"
@@ -355,13 +355,13 @@ do
                     # Pour chaque réponse donnée, on va faire l'application, permet de faire une reponse 123 pour tout faire d'un coup
                     for droit in $(echo "$droits" | grep -o "[1-3]" ); do
 		            case "$droit" in
-		            	1) ssh "sudo chmod u+r "$dossier""
+		            	1) ssh -t $user_remote@$ip_remote "sudo chmod u+r "$dossier""
 		            	echo "Droits de lecture ajoutés" 
 	                    enregistrement_tout "Ajout droits de lecture de $user sur $dossier" ;;
-		            	2) ssh "sudo chmod u+w "$dossier""
+		            	2) ssh -t $user_remote@$ip_remote "sudo chmod u+w "$dossier""
 	                    enregistrement_tout "Ajout droits d'écriture de $user sur $dossier"
 		             	echo "Droits d'écriture ajoutés" ;;
-		            	3) ssh "sudo chmod u+x "$dossier""
+		            	3) ssh -t $user_remote@$ip_remote "sudo chmod u+x "$dossier""
 	                    enregistrement_tout "Ajout droits d'execution de $user sur $dossier"
 		            	echo "Droits d'exécution ajoutés" ;;
 		            	*) echo "Choix invalide, veuillez réessayer" ;;
@@ -376,10 +376,10 @@ do
             ;;
             -) read -p "Nom d'utilisateur : " user
 		    # Vérification si l'utilisateur existe
-	    	if ssh "id "$user"" &>/dev/null; then
+	    	if ssh -t $user_remote@$ip_remote "id "$user"" &>/dev/null; then
 			read -p "Nom du dossier (entrez le path absolu) : " dossier
 			# Vérification si le dossier existe
-                if ssh "[ -d "$dossier" ]";
+                if ssh -t $user_remote@$ip_remote "[ -d "$dossier" ]";
                     then
                     echo -e "\n1) Enlever les droits de lecture à l'utilisateur"
                     echo "2) Enlever les droits d'écriture à l'utilisateur"
@@ -389,13 +389,13 @@ do
                     # Pour chaque réponse donnée, on va faire l'application, permet de faire une reponse 123 pour tout faire d'un coup
                     for droit in $(echo "$droits" | grep -o "[1-3]"); do
 		            case "$droit" in
-		            	1) ssh "sudo chmod u-r "$dossier""
+		            	1) ssh -t $user_remote@$ip_remote "sudo chmod u-r "$dossier""
 		            	echo "Droits de lecture enlevés" 
 	                    enregistrement_tout "Suppression droits de lecture de $user sur $dossier" ;;
-		            	2) ssh "sudo chmod u-w "$dossier" "
+		            	2) ssh -t $user_remote@$ip_remote "sudo chmod u-w "$dossier" "
 		             	echo "Droits d'écriture enlevés" 
 	                    enregistrement_tout "Suppression droits d'écriture de $user sur $dossier" ;;
-		             	3) ssh "sudo chmod u-x "$dossier""
+		             	3) ssh -t $user_remote@$ip_remote "sudo chmod u-x "$dossier""
 		            	echo "Droits d'exécution enlevés" 
 	                    enregistrement_tout "Suppression droits d'execution de $user sur $dossier" ;;
 		            	*) echo "Choix invalide, veuillez réessayer" ;;
@@ -416,10 +416,10 @@ do
         case $signe in
        		+) read -p "Nom d'utilisateur : " user
 		    # Vérification si l'utilisateur existe
-	    	if ssh "id "$user"" &>/dev/null; then
+	    	if ssh -t $user_remote@$ip_remote "id "$user"" &>/dev/null; then
 			read -p "Nom du fichier (entrez le path absolu) : " fichier
 			# Vérification si le fichier existe
-                if ssh "[ -f "$fichier" ]";
+                if ssh -t $user_remote@$ip_remote "[ -f "$fichier" ]";
                     then
                     echo -e "\n1) Donner les droits de lecture à l'utilisateur"
                     echo "2) Donner les droits d'écriture à l'utilisateur"
@@ -429,13 +429,13 @@ do
                     # Pour chaque réponse donnée, on va faire l'application, permet de faire une reponse 123 pour tout faire d'un coup
                     for droit in $(echo "$droits" | grep -o "[1-3]"); do
 		            case "$droit" in
-		            	1) ssh "sudo chmod u+r "$fichier""
+		            	1) ssh -t $user_remote@$ip_remote "sudo chmod u+r "$fichier""
 		            	echo "Droits de lecture ajoutés"
 	                    enregistrement_tout "Ajout droits de lecture de $user sur $fichier" ;;
-		            	2) ssh "sudo chmod u+w "$fichier""
+		            	2) ssh -t $user_remote@$ip_remote "sudo chmod u+w "$fichier""
 		              	echo "Droits d'écriture ajoutés" 
                         enregistrement_tout "Ajout droits d'écriture de $user sur $fichier" ;;
-		              	3) ssh "sudo chmod u+x "$fichier""
+		              	3) ssh -t $user_remote@$ip_remote "sudo chmod u+x "$fichier""
 		            	echo "Droits d'exécution ajoutés" 
                         enregistrement_tout "Ajout droits d'execution de $user sur $fichier" ;;
 		            	*) echo "Choix invalide, veuillez réessayer" ;;
@@ -452,10 +452,10 @@ do
             ;;
             -) read -p "Nom d'utilisateur : " user
 		    # Vérification si l'utilisateur existe
-	    	if ssh " id "$user"" &>/dev/null; then
+	    	if ssh -t $user_remote@$ip_remote " id "$user"" &>/dev/null; then
 			read -p "Nom du fichier (entrez le path absolu) : " fichier
 			# Vérification si le fichier existe
-                if ssh "[ -f "$fichier" ]";
+                if ssh -t $user_remote@$ip_remote "[ -f "$fichier" ]";
                     then
                     echo -e "\n1) Enlever les droits de lecture à l'utilisateur"
                     echo "2) Enlever les droits d'écriture à l'utilisateur"
@@ -465,13 +465,13 @@ do
                     # Pour chaque réponse donnée, on va faire l'application, permet de faire une reponse 123 pour tout faire d'un coup grace a la boucle for
                     for droit in $(echo "$droits" | grep -o "[1-3]"); do
 		            case "$droit" in
-		            	1) ssh "sudo chmod u-r "$fichier""
+		            	1) ssh -t $user_remote@$ip_remote "sudo chmod u-r "$fichier""
 		            	echo "Droits de lecture enlevés" 
                         enregistrement_tout "Suppression droits de lecture de $user sur $fichier"  ;;
-		            	2) ssh "sudo chmod u-w "$fichier""
+		            	2) ssh -t $user_remote@$ip_remote "sudo chmod u-w "$fichier""
 		            	echo "Droits d'écriture enlevés" 
                         enregistrement_tout "Suppression droits d'écriture de $user sur $fichier" ;;
-		            	3) ssh "sudo chmod u-x "$fichier""
+		            	3) ssh -t $user_remote@$ip_remote "sudo chmod u-x "$fichier""
 		            	echo "Droits d'exécution enlevés" 
                         enregistrement_tout "Suppression droits d'execution de $user sur $fichier" ;;
 		            	*) echo "Choix invalide, veuillez réessayer" ;;
@@ -536,19 +536,19 @@ case $machine in
 # Execution du script avec ssh et les données qui ont été renseignées
  	1) ip="172.16.20.30"
     # On donne les droits d'execution a l'utilisateur sur lequel on est, au cas ou c'est pas deja le cas
-        ssh ssh -t $user@$ip "chmod u+x $script"
+        ssh -t $user@$ip "chmod u+x $script"
  		ssh -t $user@$ip "$script "
         enregistrement_tout "Execution du script $script sur la machine $ip par l'user $user" ;;
  		
  	2) ip="172.16.20.20"
     # On donne les droits d'execution a l'utilisateur sur lequel on est, au cas ou c'est pas deja le cas
-        ssh ssh -t $user@$ip "chmod u+x $script"
+        ssh -t $user@$ip "chmod u+x $script"
  		ssh -t $user@$ip "$script "
         enregistrement_tout "Execution du script $script sur la machine $ip par l'user $user" ;;
  		
  	3) ip="172.16.20.5"
     # On donne les droits d'execution a l'utilisateur sur lequel on est, au cas ou c'est pas deja le cas
-        ssh ssh -t $user@$ip "chmod u+x $script"
+        ssh -t $user@$ip "chmod u+x $script"
  		ssh -t $user@$ip "$script" 
         enregistrement_tout "Execution du script $script sur la machine $ip par l'user $user" ;;
 
@@ -604,11 +604,11 @@ case $choix in
 	1) echo ""
 	read -p "Quel nom voulez-vous donner au répertoire (écrire le path absolu) " repertoire
 	#Vérification repertoire n'existe pas déjà 
-	if ssh "[ -d $repertoire ]"
+	if ssh -t $user_remote@$ip_remote "[ -d $repertoire ]"
 		then echo "Répertoire $repertoire déjà existant"
-		else ssh "mkdir $repertoire "
+		else ssh -t $user_remote@$ip_remote "mkdir $repertoire "
 		#Verification repertoire créée
-		if ssh "[ -d $repertoire ]"
+		if ssh -t $user_remote@$ip_remote "[ -d $repertoire ]"
 			then echo "Répertoire $repertoire bien créée"
 			enregistrement_tout "Création du répertoire $repertoire"
 			
@@ -621,10 +621,10 @@ case $choix in
 	2) echo ""
 	read -p "Quel répertoire voulez-vous supprimer (écrire le path absolu) ? " repertoire	
 	#Vérification répertoire pas déja existant
-	if ssh "[ -d $repertoire ]"
-		then ssh "rm -r $repertoire" 
+	if ssh -t $user_remote@$ip_remote "[ -d $repertoire ]"
+		then ssh -t $user_remote@$ip_remote "rm -r $repertoire" 
 	#Vérification suppression dossier
-		if ssh "[ -d $repertoire ]"
+		if ssh -t $user_remote@$ip_remote "[ -d $repertoire ]"
 			then echo "Erreur, répertoire $repertoire non supprimé"
 			else echo "Répertoire $repertoire bien supprimé"
 			enregistrement_tout "Suppression du répertoire $repertoire"
@@ -641,9 +641,9 @@ case $choix in
 	sudo apt update
 	sudo apt upgrade
 	#Vérification que le paquet du logiciel existe
-	if ssh " apt show $logiciel" > /dev/null
+	if ssh -t $user_remote@$ip_remote " apt show $logiciel" > /dev/null
 		#il existe alors on l'installe
-		then ssh "sudo apt install $logiciel"
+		then ssh -t $user_remote@$ip_remote "sudo apt install $logiciel"
 		echo "$logiciel est installé" 
 		
 		#il existe pas
@@ -652,7 +652,7 @@ case $choix in
 		
 		#pas de vérification qu'il a bien été installé
 		$logiciel > /dev/null
-		if ssh "[ $? -eq 0 ]"
+		if ssh -t $user_remote@$ip_remote "[ $? -eq 0 ]"
 			then echo "Le logiciel $logiciel a bien été installé"
 			enregistrement_tout "Installation du logiciel $logiciel"
 			else echo "Erreur, $logiciel n'a pas été installé"
@@ -663,9 +663,9 @@ case $choix in
 	#Désinstaller un logiciel PROBLEME : en ecrivant le nom du logiciel a désinstaller, on le lance...
 	4) echo ""
 	read -p "Quel est le logiciel que vous voulez désinstaller? " logiciel
-	ssh "$logiciel" 2>&1 /dev/null
-	if ssh "[ $? -eq 0 ]"
-		then ssh "sudo apt remove $logiciel"
+	ssh -t $user_remote@$ip_remote "$logiciel" 2>&1 /dev/null
+	if ssh -t $user_remote@$ip_remote "[ $? -eq 0 ]"
+		then ssh -t $user_remote@$ip_remote "sudo apt remove $logiciel"
 		enregistrement_tout "Désinstallation du logiciel $logiciel"
 		else echo "$logiciel n'a pas été trouvé, il n'a donc pas pu être désinstallé"
 	fi 
@@ -673,7 +673,7 @@ case $choix in
 	
 	#recherche de paquet/logiciel
 	5) echo ""
-	ssh "apt list --installed | awk -F "/" '{print $1}'" | tee -a $dossier_log/$ordi_info_log 
+	ssh -t $user_remote@$ip_remote "apt list --installed | awk -F "/" '{print $1}'" | tee -a $dossier_log/$ordi_info_log 
 	echo ""
 	echo "En cherchez vous en un en particulier? "
 	read -p "o/n : " recherche
@@ -682,8 +682,8 @@ case $choix in
 		o) echo ""
 		read -p "Lequel recherchez vous? " logiciel_recherche
 		#verification que le paquet est installé
-		if ssh "apt list --installed | awk -F "/" '{print $1}' | grep "$logiciel_recherche""
-			then ssh "apt list --installed | awk -F "/" '{print $1}' | grep "$logiciel_recherche""
+		if ssh -t $user_remote@$ip_remote "apt list --installed | awk -F "/" '{print $1}' | grep "$logiciel_recherche""
+			then ssh -t $user_remote@$ip_remote "apt list --installed | awk -F "/" '{print $1}' | grep "$logiciel_recherche""
 			echo "$logiciel_recherche est bien présent sur cette machine"
 			enregistrement_tout "Logiciel $logiciel_recherche est bien présent sur la machine"
 			else echo "$logiciel_recherche n'est pas présent sur cette machine"
@@ -734,31 +734,31 @@ do
         1)
             echo "Liste des utilisateurs :" 
             # Enregistrement des utilisateurs dans le fichier "info_<Utilisateur>-_<Date>.txt"
-            ssh "cut -d: -f1 /etc/passwd" | tee -a $dossier_log/$ordi_info_log
+            ssh -t $user_remote@$ip_remote "cut -d: -f1 /etc/passwd" | tee -a $dossier_log/$ordi_info_log
             echo "Les utilisateurs ont été enregistrés dans le fichier $dossier_log/$ordi_info_log"
             enregistrement_tout "Vision de la liste des users"
             ;;
         2)
             read -p "Nom d'utilisateur à créer : " user
-            ssh "sudo useradd $user"
+            ssh -t $user_remote@$ip_remote "sudo useradd $user"
             echo "Utilisateur $user créé."
             enregistrement_tout "Création de l'utilisateur $user"
             ;;
         3)
             read -p "Nom d'utilisateur à supprimer : " user
-            ssh "sudo userdel $user"
+            ssh -t $user_remote@$ip_remote "sudo userdel $user"
             echo "Utilisateur $user supprimé."
             enregistrement_tout "Suppression de l'utilisateur $user"
             ;;
         4)
             read -p "Nom d'utilisateur pour changer le mot de passe : " user
-            ssh "sudo passwd $user"
+            ssh -t $user_remote@$ip_remote "sudo passwd $user"
             echo "Mot de passe changé pour l'utilisateur $user."
             enregistrement_tout "Modification du mot de passe de $user"
             ;;
         5)
             read -p "Nom d'utilisateur à désactiver : " user
-            ssh "sudo usermod -L $user"
+            ssh -t $user_remote@$ip_remote "sudo usermod -L $user"
             echo "Compte utilisateur $user désactivé."
             enregistrement_tout "Désactivation de l'utilisateur $user"
             ;;
@@ -797,8 +797,8 @@ do
         1)
             read -p "Nom d'utilisateur à ajouter au groupe d'administration : " user
             # Vérification si l'utilisateur existe
-            if ssh "id "$user"" &>/dev/null; then
-                ssh "sudo usermod -aG sudo $user"
+            if ssh -t $user_remote@$ip_remote "id "$user"" &>/dev/null; then
+                ssh -t $user_remote@$ip_remote "sudo usermod -aG sudo $user"
                 echo "Utilisateur $user ajouté au groupe d'administration."
                 enregistrement_tout "Ajout de l'utilisateur $user au groupe d'administration"
             else
@@ -811,7 +811,7 @@ do
         2)
             read -p "Nom d'utilisateur à ajouter à un groupe : " user
             # Vérification si l'utilisateur existe
-            if ssh " id "$user"" &>/dev/null; then
+            if ssh -t $user_remote@$ip_remote " id "$user"" &>/dev/null; then
                 continue
             else
                 echo "L'utilisateur $user n'existe pas. Veuillez le créer d'abord."
@@ -820,10 +820,10 @@ do
                 continue
             fi
             
-            ssh "read -p "Nom du groupe : " group"
+            ssh -t $user_remote@$ip_remote "read -p "Nom du groupe : " group"
             # Vérification si le groupe existe
-            if ssh " getent group $group" &>/dev/null; then
-            	ssh "sudo usermod -aG $group $user"
+            if ssh -t $user_remote@$ip_remote " getent group $group" &>/dev/null; then
+            	ssh -t $user_remote@$ip_remote "sudo usermod -aG $group $user"
            	echo "Utilisateur $user ajouté au groupe $group."
            	enregistrement_tout "Ajout de l'utilisateur $user au groupe $group"
                 continue
@@ -835,7 +835,7 @@ do
         3)
             read -p "Nom d'utilisateur à sortir du groupe : " user
             read -p "Nom du groupe : " group
-            ssh "sudo gpasswd -d $user $group"
+            ssh -t $user_remote@$ip_remote "sudo gpasswd -d $user $group"
             enregistrement_tout "Suppression de l'utilisateur $user du groupe $group"
             echo "Utilisateur $user sorti du groupe $group."
             ;;
@@ -899,9 +899,9 @@ information_systeme() {
             1)
                 echo  "Type de CPU, nombre de coeurs, etc. :"
                 # Enregistrement des informations dans le fichier "info_<ordinateur>-GEN_<Date>.txt"
-                ssh "lscpu" | tee -a $dossier_log/$ordi_info_log
+                ssh -t $user_remote@$ip_remote "lscpu" | tee -a $dossier_log/$ordi_info_log
                 # On vérifie si le fichier à été crée
-                if ssh "[ -f $dossier_log/$ordi_info_log ]"; then
+                if ssh -t $user_remote@$ip_remote "[ -f $dossier_log/$ordi_info_log ]"; then
                     echo "Les informations sur le CPU ont été enregistrées dans le fichier $dossier_log/$ordi_info_log"
                     enregistrement_tout "Vision du type de CPU, nombre de coeurs"
                 else
@@ -911,9 +911,9 @@ information_systeme() {
             2)
                 echo "Mémoire RAM totale :"
                 # Enregistrement des informations dans le fichier "info_<ordinateur>-GEN_<Date>.txt"
-                ssh "free -h | grep "Mem" | awk '{print $2}'" | tee -a $dossier_log/$ordi_info_log
+                ssh -t $user_remote@$ip_remote "free -h | grep "Mem" | awk '{print $2}'" | tee -a $dossier_log/$ordi_info_log
                 # On vérifie si le fichier à été crée
-                if ssh "[ -f $dossier_log/$ordi_info_log ]"; then
+                if ssh -t $user_remote@$ip_remote "[ -f $dossier_log/$ordi_info_log ]"; then
                     echo "Les informations sur la mémoire RAM totale ont été enregistrées dans le fichier $dossier_log/$ordi_info_log"
                     enregistrement_tout "Vision de la RAM totale"
                 else
@@ -925,7 +925,7 @@ information_systeme() {
                 # Enregistrement des informations dans le fichier "info_<ordinateur>-GEN_<Date>.txt"
                 free -h | grep "Mem" | awk '{print $3}' | tee -a $dossier_log/$ordi_info_log
                 # On vérifie si le fichier à été crée
-                if ssh "[ -f $dossier_log/$ordi_info_log ]"; then
+                if ssh -t $user_remote@$ip_remote "[ -f $dossier_log/$ordi_info_log ]"; then
                     echo "Les informations sur l'utilisation de la mémoire RAM ont été enregistrées dans le fichier $dossier_log/$ordi_info_log"
                     enregistrement_tout "Vision de l'utilisation de la RAM"
                 else
@@ -935,9 +935,9 @@ information_systeme() {
             4)
                 echo "Utilisation du disque :"
                 # Enregistrement des informations dans le fichier "info_<ordinateur>-GEN_<Date>.txt"
-                ssh "df -h" | tee -a $dossier_log/$ordi_info_log
+                ssh -t $user_remote@$ip_remote "df -h" | tee -a $dossier_log/$ordi_info_log
                 # On vérifie si le fichier à été crée
-                if ssh " [ -f $dossier_log/$ordi_info_log ]"; then
+                if ssh -t $user_remote@$ip_remote " [ -f $dossier_log/$ordi_info_log ]"; then
                     echo "Les informations sur l'utilisation du disque ont été enregistrées dans le fichier $dossier_log/$ordi_info_log"
                     enregistrement_tout "Vision de l'utilisation du disque"
                 else
@@ -947,7 +947,7 @@ information_systeme() {
             5)
                 echo "Utilisation du processeur :"
                 # Enregistrement des informations dans le fichier info_<ordinateur>-GEN_<Date>.txt"
-                ssh "top -b -n 1 | grep "Cpu"" | tee -a $dossier_log/$ordi_info_log
+                ssh -t $user_remote@$ip_remote "top -b -n 1 | grep "Cpu"" | tee -a $dossier_log/$ordi_info_log
                 # On vérifie si le fichier à été crée
                 echo "Les informations sur l'utilisation du processeur ont été enregistrées dans le fichier $dossier_log/$ordi_info_log"
                 enregistrement_tout "Vision de l'utilisation du processeur"
@@ -955,9 +955,9 @@ information_systeme() {
             6)
                 echo "Version du système d'exploitation :"
                 # Enregistrement des informations dans le fichier "info_<ordinateur>_<Date>.txt"
-                ssh "cat /etc/os-release" | tee -a $dossier_log/$ordi_info_log
+                ssh -t $user_remote@$ip_remote "cat /etc/os-release" | tee -a $dossier_log/$ordi_info_log
                 # On vérifie si le fichier à été crée
-                if ssh "[ -f $dossier_log/$ordi_info_log ]"; then
+                if ssh -t $user_remote@$ip_remote "[ -f $dossier_log/$ordi_info_log ]"; then
                     echo "Les informations sur la version du système d'exploitation ont été enregistrées dans le fichier $dossier_log/$ordi_info_log"
                     enregistrement_tout "Vision du système d'exploitation"
                 else
@@ -994,24 +994,24 @@ action_systeme() {
                 echo "Arrêt du système en cours ..."
                 # Arrêt du système
                 enregistrement_tout "Arrêt du système"
-                ssh "sudo shutdown -h now"
+                ssh -t $user_remote@$ip_remote "sudo shutdown -h now"
                 ;;
             2)
                 echo "Redémarrage du système en cours ..."
                 # Redémarrage du système
                 enregistrement_tout "Redémarrage du système"
-                ssh "sudo shutdown -r now"
+                ssh -t $user_remote@$ip_remote "sudo shutdown -r now"
                 ;;
             3)
                 echo "Vérouillage du système en cours ..."
                 # Vérouillage du système
                 enregistrement_tout "Verrouillage du système"
-                ssh "gnome-screensaver-command -l"
+                ssh -t $user_remote@$ip_remote "gnome-screensaver-command -l"
                 ;;
             4)
                 echo "Mise à jour du système en cours ..."
                 # Mise à jour du système
-                ssh "sudo apt update && sudo apt upgrade -y"
+                ssh -t $user_remote@$ip_remote "sudo apt update && sudo apt upgrade -y"
                 enregistrement_tout "Mise à jour du systeme"
                 ;;
             R|r) enregistrement_tout "Direction vers le menu de gestion du système"
@@ -1043,10 +1043,11 @@ start
 
 
 #petite fonction pour les commandes en ssh
-ssh()
-{
-ssh -t $user_remote@$ip_remote
-}
+#elle ne fonctionne pas sur la vm proxmox (sur les vm en local oui) donc commentée
+#ssh()
+#{
+#ssh -t $user_remote@$ip_remote
+#}
 
 
 
