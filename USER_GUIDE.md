@@ -81,8 +81,35 @@ De plus, il est possible de quitter le script à tout moment en entrant ``X``.
 |Recherche d'une information déjà demandée/un évenement|/|Recherche des evenements dans le fichier log_evt.log pour un utilisateur|Recherche dans le fichier log de toutes les actions faites (déplacement dans le menu, actions faites, informations demandées, etc)|&check;|&check;|
 |Recherche d'une information déjà demandée/un évenement|/|Recherche des evenements dans le fichier log_evt.log pour un ordinateur|Recherche dans le fichier log de toutes les actions faites (déplacement dans le menu, actions faites, informations demandées, etc)|&check;|&check;|
 |Prise en main à distance|/|Prise de main à distance (GUI)|Faire une prise ne main à distance via un logiciel en graphique|&cross;|&cross;|
+-------------------
+# ❓ FAQ — 
+-------------------
 
+**Q : Comment naviguer dans les menus ?**
 
+> Il suffit de saisir le chiffre ou la lettre correspondant au menu ou sous-menu désiré. Par exemple, tapez 1 pour accéder à la gestion des utilisateurs, puis R pour revenir au menu précédent ou X pour quitter._
 
+**Q : Puis-je quitter le script à tout moment ?**
 
+> Oui, entrez simplement X pour fermer le script immédiatement, peu importe le menu où vous êtes._
+
+**Q : Que faire si je me suis trompé de menu ?**
+
+> Entrez R pour revenir au menu précédent._
+
+**Q : Est-ce que je peux installer et désinstaller des logiciels ?**
+
+> Oui, dans le menu "Gestion des logiciels et répertoires", vous pouvez installer ou désinstaller des logiciels via une base de paquets._
+
+**Q : Puis-je créer ou supprimer des répertoires ?**
+
+> Absolument. Utilisez les options "Création de répertoire" ou "Suppression de répertoire" dans ce même menu._
+
+**Q : Est-ce que je peux définir des règles de pare-feu avec ce script ?**
+
+> Oui, dans le menu Sécurité, sélectionnez l’option correspondante pour gérer les règles de pare-feu (ajout, suppression, ports ouverts, etc.)._
+
+**Q : Comment voir les connexions actives d’un utilisateur ?**
+
+> Utilisez l’option "Liste des sessions ouvertes par l'utilisateur" dans le menu Sécurité._
 
