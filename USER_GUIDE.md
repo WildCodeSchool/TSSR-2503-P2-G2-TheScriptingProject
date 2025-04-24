@@ -88,31 +88,31 @@ De plus, il est possible de quitter le script à tout moment en entrant ``X``.
 
 **Q : Comment naviguer dans les menus ?**
 
-> Il suffit de saisir le chiffre ou la lettre correspondant au menu ou sous-menu désiré. Par exemple, tapez 1 pour accéder à la gestion des utilisateurs, puis R pour revenir au menu précédent ou X pour quitter._
+> _Il suffit de saisir le chiffre ou la lettre correspondant au menu ou sous-menu désiré. Par exemple, tapez 1 pour accéder à la gestion des utilisateurs, puis R pour revenir au menu précédent ou X pour quitter._
 
 **Q : Puis-je quitter le script à tout moment ?**
 
-> Oui, entrez simplement X pour fermer le script immédiatement, peu importe le menu où vous êtes._
+> _Oui, entrez simplement X pour fermer le script immédiatement, peu importe le menu où vous êtes._
 
 **Q : Que faire si je me suis trompé de menu ?**
 
-> Entrez R pour revenir au menu précédent._
+> _Entrez R pour revenir au menu précédent._
 
 **Q : Est-ce que je peux installer et désinstaller des logiciels ?**
 
-> Oui, dans le menu "Gestion des logiciels et répertoires", vous pouvez installer ou désinstaller des logiciels via une base de paquets._
+> _Oui, dans le menu "Gestion des logiciels et répertoires", vous pouvez installer ou désinstaller des logiciels via une base de paquets._
 
 **Q : Puis-je créer ou supprimer des répertoires ?**
 
-> Absolument. Utilisez les options "Création de répertoire" ou "Suppression de répertoire" dans ce même menu._
+> _Absolument. Utilisez les options "Création de répertoire" ou "Suppression de répertoire" dans ce même menu._
 
 **Q : Est-ce que je peux définir des règles de pare-feu avec ce script ?**
 
-> Oui, dans le menu Sécurité, sélectionnez l’option correspondante pour gérer les règles de pare-feu (ajout, suppression, ports ouverts, etc.)._
+> _Oui, dans le menu Sécurité, sélectionnez l’option correspondante pour gérer les règles de pare-feu (ajout, suppression, ports ouverts, etc.)._
 
 **Q : Comment voir les connexions actives d’un utilisateur ?**
 
-> Utilisez l’option "Liste des sessions ouvertes par l'utilisateur" dans le menu Sécurité._
+> _Utilisez l’option "Liste des sessions ouvertes par l'utilisateur" dans le menu Sécurité._
 
 **Q : Je n’ai pas les droits administrateur, puis-je tout de même suivre ce guide ?**
 > _Non, pour le script Powershell, il est nécéssaire d'éxecuter le fichier avec les droits administrateur. Pour le script Bash vous devez connaitre le mot de passe d'administrateur pour que certaine options fonctionne correctement._
