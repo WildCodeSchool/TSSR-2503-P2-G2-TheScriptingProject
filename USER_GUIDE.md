@@ -113,3 +113,5 @@ De plus, il est possible de quitter le script à tout moment en entrant ``X``.
 
 > Utilisez l’option "Liste des sessions ouvertes par l'utilisateur" dans le menu Sécurité._
 
+**Q : Je n’ai pas les droits administrateur, puis-je tout de même suivre ce guide ?**
+> _Non, pour le script Powershell, il est nécéssaire d'éxecuter le fichier avec les droits administrateur. Pour le script Bash vous devez connaitre le mot de passe d'administrateur pour que certaine options fonctionne correctement._
