@@ -17,7 +17,7 @@
          
 ### 2. [Configuration SSH](#configuration-SSH)  
 ### 3. [Configuration WinRM](#configuration-WinRM)   
-
+### — [FAQ](#FAQ) —
 
 
 
@@ -155,7 +155,8 @@ Tout est maintenant prêt à l'utilisation.
 
 
 -------------------
-❓ FAQ —
+❓— FAQ —
+<span id="FAQ"></span>
 -------------------
 **Q : Dois-je absolument exécuter apt update et apt upgrade avant ?**
 
