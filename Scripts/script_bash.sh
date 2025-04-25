@@ -58,6 +58,7 @@ echo "Vous pouvez rechercher par le nom d'utilisateur"
 echo "Par la date YYYY/MM/DD"
 echo "Par l'évenement (Vision de..., Déplacement menu ..., Activation SSH ...) "
 read -p "Votre réponse : " recherche
+echo ""
 cat /var/log/log_evt.log | grep "$recherche"
 if ! [ $? -eq 0 ]
 then
@@ -67,7 +68,7 @@ fi
 read -p "Voulez-vous faire une autre recherche? (o/n) " encore
 case $encore in
     o) enregistrement_tout "Nouvelle recherche sur un évenement, une action, un déplacement"
-    recherche_log ;;
+    recherche_tout ;;
 #pas d'autre recherche, retour au menu principal
     n) enregistrement_tout "Direction vers le menu principal"
 	start ;;
@@ -96,6 +97,8 @@ do
 	then
 		echo -e "\nIl y a une information à ce sujet dans le fichier $fichier"
 		echo "Voici un extrait : $extrait"
+    else   
+        echo -e "\nIl y a une information à ce sujet"
 	fi
 
 done
@@ -916,8 +919,6 @@ information_systeme() {
                 if ssh -t $user_remote@$ip_remote "[ -f $dossier_log/$ordi_info_log ]"; then
                     echo "Les informations sur la mémoire RAM totale ont été enregistrées dans le fichier $dossier_log/$ordi_info_log"
                     enregistrement_tout "Vision de la RAM totale"
-                else
-                    echo "Erreur lors de la création du fichier $dossier_log/$ordi_info_log."
                 fi
                 ;;
             3)
@@ -1114,6 +1115,7 @@ esac
 done
 }
 ###################### APPEL DU MENU PRINCIPAL #######################
+clear
 enregistrement_tout "********StartScript********"
 enregistrement_information
 ssh_cible
