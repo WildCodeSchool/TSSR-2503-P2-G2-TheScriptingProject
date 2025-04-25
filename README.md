@@ -109,6 +109,7 @@ Sur le noeud du [proxmox](https://node5.infra.wilders.dev:8006/#v1:0:18:4::::::
 
 - Mise en place du protocole SSH
 - Connaissance des commandes et de la syntaxe de celles-ci
+- Mise en place de la connexion à distance des scripts
 
 # 💡 **Solutions trouvées**
 <span id="solutions-trouvees"></span>
