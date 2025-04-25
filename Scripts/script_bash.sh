@@ -914,8 +914,7 @@ information_systeme() {
                 if ssh -t $user_remote@$ip_remote "[ -f $dossier_log/$ordi_info_log ]"; then
                     echo "Les informations sur le CPU ont été enregistrées dans le fichier $dossier_log/$ordi_info_log"
                     enregistrement_tout "Vision du type de CPU, nombre de coeurs"
-                else
-                    echo "Erreur lors de la création du fichier $dossier_log/$ordi_info_log."
+            
                 fi                
                 ;;
             2)
@@ -936,8 +935,7 @@ information_systeme() {
                 if ssh -t $user_remote@$ip_remote "[ -f $dossier_log/$ordi_info_log ]"; then
                     echo "Les informations sur l'utilisation de la mémoire RAM ont été enregistrées dans le fichier $dossier_log/$ordi_info_log"
                     enregistrement_tout "Vision de l'utilisation de la RAM"
-                else
-                    echo "Erreur lors de la création du fichier $dossier_log/$ordi_info_log."
+                
                 fi
                 ;;
             4)
@@ -948,8 +946,7 @@ information_systeme() {
                 if ssh -t $user_remote@$ip_remote " [ -f $dossier_log/$ordi_info_log ]"; then
                     echo "Les informations sur l'utilisation du disque ont été enregistrées dans le fichier $dossier_log/$ordi_info_log"
                     enregistrement_tout "Vision de l'utilisation du disque"
-                else
-                    echo "Erreur lors de la création du fichier $dossier_log/$ordi_info_log."
+                
                 fi
                 ;;
             5)
@@ -968,8 +965,7 @@ information_systeme() {
                 if ssh -t $user_remote@$ip_remote "[ -f $dossier_log/$ordi_info_log ]"; then
                     echo "Les informations sur la version du système d'exploitation ont été enregistrées dans le fichier $dossier_log/$ordi_info_log"
                     enregistrement_tout "Vision du système d'exploitation"
-                else
-                    echo "Erreur lors de la création du fichier $dossier_log/$ordi_info_log."
+                
                 fi
                 ;;
             R|r) enregistrement_tout "Direction vers le menu de gestion du systeme"
