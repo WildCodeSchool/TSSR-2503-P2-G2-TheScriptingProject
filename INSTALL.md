@@ -17,6 +17,8 @@
          
 ### 2. [Configuration SSH](#configuration-SSH)  
 ### 3. [Configuration WinRM](#configuration-WinRM)   
+  #### 3.1 [Configuration serveur](#configuration-serveur)  
+  #### 3.2 [Configuration client](#configuration-client)   
 ### — [FAQ](#faq) —
 
 
@@ -142,15 +144,53 @@ Tout est maintenant prêt à l'utilisation.
 
 ### 3. Configuration WinRM 
 <span id="configuration-WinRM"></span>
+Pour permettre une connexion entre les machines, il y a, entre autres, le service WinRM en natif.
+
+La configuration pour le serveur est différente de la configuration pour le client.  
+  #### 3.1 Configuration serveur  
+<span id="configuration-serveur"></span>
+
+Pour démarrer le service, tapons la commande :  
+``Start-Service -Name WinRM``
+
+Voici la commande pour mermettre l'accès à distance :   
+``Enable-PSRemoting -Force``
+
+Nous allons maintenant confiurer le pare-feu pour autoriser les connexions WInRM avec la commande :  
+``New-NetFirewallRule -Name "WinRM-HTTP" -DisplayName "Windows Remote Management (HTTP-In)" -Enabled True -Direction Inbound -Protocol TCP -LocalPort 5985``  
+Le port par défaut étant le TCP 5985
+
+Enfin, signalons les hôtes de confiance avec la commande suivante :  
+``Set-Item WSMan:\localhost\Client\TrustedHosts -Value "172.16.20.20" -Force``  
+172.16.20.20 étant l'adresse IP de CLIWIN01, mais nous pourrions remplacer l'adresse IP par "172.16.20*" pour rendre tous les hôtes du réseaux dignes de confiance
+
+  #### 3.2 Configuration client  
+<span id="configuration-client"></span>
+
+Ouvrons PowerShell en mode administrateur.
+
+Puis, pour démarrer le service WinRM, executons la commande :  
+``Start-Service -Name WinRM``
+
+La commande suivante permettra un démarrage automatique :  
+``Set-Service -Name winrm -StartupType Automatic``
 
 
+Pour configurer les paramètres de l'hôte distant et ainsi permettre la connexion à distance, executons cette commande :  
+``Set-Item WSMan:\localhost\Client\TrustedHosts -Value "SRVWIN01" -Force``
+
+Executons ensuite cette commande pour modifier le profil en catégorie privée :  
+Set-NetConnectionProfile -InterfaceIndex (Get-NetConnectionProfile).InterfaceIndex -NetworkCategory Private
+
+Pour ajouter une exception au pare-feu et autoriser WinRM, voici la commande :  
+``Enable-PSRemoting -Force Set-NetFirewallRule -Name "WINRM-HTTP-In-TCP" -Enabled True ``
 
 
+La commande suivante va permettre de configurer LocalAccountTokenFilterPolicy :  
+``reg add HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System /v LocalAccountTokenFilterPolicy /t REG_DWORD /d 1 /f ``
 
-
-
-
-
+Pour finir, lonfiguration du WinRM se fait via la commande :  
+``winrm quickconfig``
 
 
 
