@@ -296,17 +296,24 @@ read -p "Votre réponse : " choix
 case $choix in
 	#Voir l'adresse MAC
 	1) echo ""
-	ssh -t $user_remote@$ip_remote "ip a | grep "link/ether*" | awk -F " " '{print $2}'" | tee -a $dossier_log/$ordi_info_log  
+    #il semblerait que awk ne fonctionne pas sur proxmox, on suppose que la commande "prend trop de temps" et que la boucle while true ne permette pas ce temps, donc aucun résultat n'est affiché
+    #ssh -t $user_remote@$ip_remote "ip a | grep "link/ether*" | awk -F " " '{print $2}'" | tee -a $dossier_log/$ordi_info_log  
+    ssh -t $user_remote@$ip_remote "ip a | grep "link/ether*"" | tee -a $dossier_log/$ordi_info_log  
 	enregistrement_tout "Infos adresse mac de $ip_remote" ;;
 	
 	#Voir adresse IP des interfaces
 	2) echo ""
-	ssh -t $user_remote@$ip_remote "cat /etc/hosts | grep "172*"" | tee -a $dossier_log/$ordi_info_log  
+    #il semblerait que awk ne fonctionne pas sur proxmox, on suppose que la commande "prend trop de temps" et que la boucle while true ne permette pas ce temps, donc aucun résultat n'est affiché
+    #ssh -t $user_remote@$ip_remote "ip a | grep "172*" | awk -F " " '{print $2}'" | tee -a $dossier_log/$ordi_info_log  
+	#on remplace par cette commande, moins précise du coup
+    ssh -t $user_remote@$ip_remote "ip a | grep "172*"" | tee -a $dossier_log/$ordi_info_log  
 	enregistrement_tout "Infos adresses IP des interfaces connectées avec $ip_remote" ;;
 	
 	#Voir le nombre d'interfaces (donc le nombre de lignes)
-	3) echo "Voici le nombre d'interfaces connectées"
+	3) echo "Voici le nombre d'interfaces connectées :"
 	ssh -t $user_remote@$ip_remote "cat /etc/hosts | grep "172*" | wc -l" | tee -a $dossier_log/$ordi_info_log
+    echo "Les voici :"
+    ssh -t $user_remote@$ip_remote "cat /etc/hosts | grep "172*"" | tee -a $dossier_log/$ordi_info_log
 	enregistrement_tout "Infos nombre d'interfaces connectées à $ip_remote" ;;
 	
 	#retour au menu précédent
