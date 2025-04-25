@@ -8,9 +8,9 @@
 $dossier_log = "C:\Script_Administration\log"
 $date = Get-Date -Format "yyyyMMdd-HHmmss"
 # On ajuste le nom du fichier pour une information ordinateur sous la forme <NomDuPC>-GEN_<Date>.txt qui sera créé dans le dossier "log"
-$ordi_info_log = "info_$($env:COMPUTERNAME)_GEN_$date.txt"
+$ordi_info_log = "info_$($env:COMPUTERNAME)_GEN_$($date).txt"
 # On ajuste le nom du fichier pour une information utilisateur sous la forme <NomDuPC>_<NomDeLUtilisateur>_<Date>.txt  
-$user_info_log="info_$($env:COMPUTERNAME)_$($env:USERNAME)_$date.txt"
+$user_info_log="info_$($env:COMPUTERNAME)_$($env:USERNAME)_$($date).txt"
 
 
 
